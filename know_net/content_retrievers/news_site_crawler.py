@@ -13,7 +13,7 @@ DEFAULT_CONTENT_PARSER = content_parsers.YahooFinanceParser()
 MAX_CONCURRENCY = 20
 MAX_RETRIES = 3
 
-logger = loguru.logger
+logger = loguru.logger.opt(colors=True)
 
 
 class NewsCrawler(base.ContentRetriever):
@@ -31,6 +31,7 @@ class NewsCrawler(base.ContentRetriever):
         self.content_parser = content_parser or DEFAULT_CONTENT_PARSER
         self.max_retries = max_retries or MAX_RETRIES
         self.queue: asyncio.Queue[str] = asyncio.Queue()
+        logger.info("initialized {}", self.__class__.__name__)
 
     def __iter__(self) -> Iterator[str]:
         """
@@ -83,15 +84,17 @@ class NewsCrawler(base.ContentRetriever):
 
     async def _load_article(self, url: str) -> Optional[str]:
         async with self._semaphore:
-            for attempt in range(self.max_retries):  # try up to 3 times
+            for attempt in range(1, self.max_retries + 1):
                 async with aiohttp.ClientSession() as session:
                     try:
                         async with session.get(url) as response:
                             response.raise_for_status()
                             text = await response.text()
-                            return self.content_parser.parse(text)
+                            parsed_text = self.content_parser.parse(text)
+                            logger.debug(f"Retrieved {url}")
+                            return parsed_text
                     except aiohttp.ClientResponseError:
-                        logger.info(f"Request to {url} failed on attempt {attempt + 1}")
+                        logger.debug(f"Request to {url} failed on attempt {attempt}")
                         await asyncio.sleep(2**attempt)  # exponential backoff
             logger.warning(f"All attempts to retrieve the URL failed: {url}")
             return None  # or some appropriate default value

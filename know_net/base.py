@@ -1,5 +1,5 @@
 import abc
-from typing import Iterator
+from typing import Iterable, Iterator
 import networkx as nx
 
 
@@ -10,6 +10,9 @@ class ContentRetriever(abc.ABC):
 
 
 class GraphBuilder(abc.ABC):
+    def add_content_batch(self, contents: Iterable[str]) -> None:
+        [self.add_content(c) for c in contents]
+
     @abc.abstractmethod
     def add_content(self, content: str) -> None:
         ...
