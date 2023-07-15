@@ -18,6 +18,7 @@ chromadb = "^0.3.29"
 torch = "^2.0.1"
 loguru = "^0.7.0"
 text-generation = "^0.6.0"
+lxml = "^4.9.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
