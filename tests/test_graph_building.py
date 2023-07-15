@@ -1,6 +1,6 @@
 from know_net.graph_building import LLMGraphBuilder
 
-T = """"New Breakthrough in Renewable Energy: Solar-Powered Artificial Leaves Set to Revolutionize Clean Energy Production"
+test_doc1 = """"New Breakthrough in Renewable Energy: Solar-Powered Artificial Leaves Set to Revolutionize Clean Energy Production"
 
 Date: July 15, 2023
 
@@ -10,10 +10,12 @@ The research team, led by Dr. Amanda Reynolds, has successfully engineered an ar
 
 Unlike traditional solar panels, which convert sunlight directly into electricity, this new technology directly produces hydrogen gas. The artificial leaf consists of a thin, flexible silicon-based material embedded with specialized catalysts that facilitate the splitting of water molecules into hydrogen and oxygen. The generated hydrogen can then be stored and used as a clean and efficient source of energy.
 """
+test_doc2 = """nThe new iPhone 12 is expected to be released in September 2020. It will have a 5G network, improved camera, and a new design."""
 
 if __name__ == "__main__":
     builder = LLMGraphBuilder()
-    builder.add_content(T)
+    builder.add_content(test_doc1)
+    builder.add_content(test_doc2)
     print(builder.graph)
     print(builder.triples)
-    print(builder.search("hypoxaemia"))
+    print(builder.search("iphone"))
