@@ -1,6 +1,23 @@
 import streamlit as st
 import pickle
-from text_generation import Client
+from know_net.graph_building import LLMGraphBuilder
+import os
+
+# Path to the .env file
+env_file = ".env"
+
+# Read the .env file and set environment variables
+with open(env_file, "r") as file:
+    for line in file:
+        # Remove leading/trailing whitespace and newlines
+        line = line.strip()
+        if line and not line.startswith("#"):
+            # Split the line into key-value pairs
+            key, value = line.split("=", 1)
+
+            # Set the environment variable
+            os.environ[key] = value
+
 
 st.title("KnowNet")
 
@@ -17,9 +34,10 @@ for message in st.session_state["messages"]:
 
 with open("builder.pkl", "rb") as f:
     client = pickle.load(f)
+client: LLMGraphBuilder
 
 if prompt := st.chat_input("Start chat"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state.messages.append(prompt)
     with st.chat_message("user"):
         st.markdown(prompt)
 
@@ -31,7 +49,7 @@ if prompt := st.chat_input("Start chat"):
         except IndexError:
             last_message = None
 
-        response = client.ask_question(last_message)
+        response = str(client.search(last_message))
         full_response += response
         message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)

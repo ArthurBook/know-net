@@ -21,7 +21,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.graphs.networkx_graph import NetworkxEntityGraph
 from langchain.indexes import GraphIndexCreator
 from langchain.llms import HuggingFaceTextGenInference
-from langchain.vectorstores import Chroma
+from langchain.vectorstores import Chroma, FAISS
 from loguru import logger
 from pydantic import BaseModel
 
@@ -67,7 +67,7 @@ class LLMGraphBuilder(GraphBuilder):
         self.index_creator = GraphIndexCreator(llm=llm)
         self.triples: List[KGTriple] = []
         self.embeddings = OpenAIEmbeddings()  # type: ignore
-        self.vectorstore = Chroma.from_documents([], self.embeddings)
+        self.vectorstore = FAISS.from_texts(["root"], self.embeddings)
         self.match_threshold = 0.95
         self.doc_to_entity: Dict[str, Entity] = {}
         self.llm_cache = diskcache.Cache(".triples_cache")

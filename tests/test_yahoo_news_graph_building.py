@@ -6,13 +6,15 @@ if __name__ == "__main__":
 
     builder = graph_building.LLMGraphBuilder()
     scraper = news_site_crawler.NewsCrawler(test_url)
+    news = list(scraper)[:2]
 
-    builder.add_content_batch(scraper)
+    builder.add_content_batch(news)
 
     print(builder.graph)
     print(builder.triples)
     print(builder.search("hypoxaemia"))
 
     import pickle
-    with open("builder.pkl", 'wb') as f:
+
+    with open("builder.pkl", "wb") as f:
         pickle.dump(builder, f)
