@@ -1,9 +1,9 @@
 import asyncio
+import loguru
 from typing import AsyncGenerator, Iterator, List, Optional, Set
-from typing_extensions import Annotated
 
 import aiohttp
-import bs4
+from typing_extensions import Annotated
 
 from know_net import base
 from know_net.content_retrievers import content_filters, content_parsers
@@ -11,6 +11,9 @@ from know_net.content_retrievers import content_filters, content_parsers
 DEFAULT_CONTENT_FILTER = content_filters.SimpleHeuristicFilter(3, 30)
 DEFAULT_CONTENT_PARSER = content_parsers.YahooFinanceParser()
 MAX_CONCURRENCY = 20
+MAX_RETRIES = 3
+
+logger = loguru.logger
 
 
 class NewsCrawler(base.ContentRetriever):
@@ -21,10 +24,12 @@ class NewsCrawler(base.ContentRetriever):
         url: Annotated[str, "Link the news frontpage that you want to crawl"],
         link_finder: Optional[content_filters.HyperLinkFinder] = None,
         content_parser: Optional[content_parsers.ContentParser] = None,
+        max_retries: Optional[int] = None,
     ) -> None:
         self.url = url
         self.hyperlink_finder = link_finder or DEFAULT_CONTENT_FILTER
         self.content_parser = content_parser or DEFAULT_CONTENT_PARSER
+        self.max_retries = max_retries or MAX_RETRIES
         self.queue: asyncio.Queue[str] = asyncio.Queue()
 
     def __iter__(self) -> Iterator[str]:
@@ -58,9 +63,12 @@ class NewsCrawler(base.ContentRetriever):
 
     async def load(self) -> None:
         async for content_piece in self._load_frontpage_articles(self.url):
-            await self.queue.put(content_piece)
+            if content_piece is not None:
+                await self.queue.put(content_piece)
 
-    async def _load_frontpage_articles(self, url: str) -> AsyncGenerator[str, None]:
+    async def _load_frontpage_articles(
+        self, url: str
+    ) -> AsyncGenerator[Optional[str], None]:
         async with self._semaphore:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
@@ -73,10 +81,17 @@ class NewsCrawler(base.ContentRetriever):
                     for result in asyncio.as_completed(tasks):
                         yield await result
 
-    async def _load_article(self, url: str) -> str:
+    async def _load_article(self, url: str) -> Optional[str]:
         async with self._semaphore:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    response.raise_for_status()
-                    text = await response.text()
-                    return self.content_parser.parse(text)
+            for attempt in range(self.max_retries):  # try up to 3 times
+                async with aiohttp.ClientSession() as session:
+                    try:
+                        async with session.get(url) as response:
+                            response.raise_for_status()
+                            text = await response.text()
+                            return self.content_parser.parse(text)
+                    except aiohttp.ClientResponseError:
+                        logger.info(f"Request to {url} failed on attempt {attempt + 1}")
+                        await asyncio.sleep(2**attempt)  # exponential backoff
+            logger.warning(f"All attempts to retrieve the URL failed: {url}")
+            return None  # or some appropriate default value
