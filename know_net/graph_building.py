@@ -7,6 +7,7 @@ from langchain.indexes import GraphIndexCreator
 from langchain.docstore.document import Document
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.embeddings.sentence_transformer import SentenceTransformerEmbeddings
+import diskcache
 from know_net.base import GraphBuilder
 
 from loguru import logger
@@ -47,10 +48,17 @@ class LLMGraphBuilder(GraphBuilder):
         self.vectorstore = Chroma.from_documents([], self.embeddings)
         self.match_threshold = 0.95
         self.doc_to_entity: Dict[Document, Entity] = {}
+        self.llm_cache = diskcache.Cache(".triples_cache")
         logger.info("Initialized LLMGraphBuilder")
 
     def add_content(self, content: str) -> None:
-        graph = self.index_creator.from_text(content)
+        if content not in self.llm_cache:
+            logger.info("cache miss for content: {}", content[:18])
+            graph = self.index_creator.from_text(content)
+            self.llm_cache[content] = graph
+        else:
+            logger.info("cache hit for content: {}", content[:18])
+            graph = self.llm_cache[content]
         unnormalized_triples: List[Tuple[str, str, str]] = graph.get_triples()
         normalized_triples: List[KGTriple] = [
             self._normalize_triple(s, p, o) for s, o, p in unnormalized_triples
