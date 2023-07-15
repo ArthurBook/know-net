@@ -47,7 +47,7 @@ class LLMGraphBuilder(GraphBuilder):
         self.embeddings = HuggingFaceEmbeddings(model_kwargs={"device": "cuda"})
         self.vectorstore = Chroma.from_documents([], self.embeddings)
         self.match_threshold = 0.95
-        self.doc_to_entity: Dict[Document, Entity] = {}
+        self.doc_to_entity: Dict[str, Entity] = {}
         self.llm_cache = diskcache.Cache(".triples_cache")
         logger.info("Initialized LLMGraphBuilder")
 
