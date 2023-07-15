@@ -1,5 +1,5 @@
 import asyncio
-import logging
+import loguru
 from typing import AsyncGenerator, Iterator, List, Optional, Set
 
 import aiohttp
@@ -13,7 +13,7 @@ DEFAULT_CONTENT_PARSER = content_parsers.YahooFinanceParser()
 MAX_CONCURRENCY = 20
 MAX_RETRIES = 3
 
-logger = logging.getLogger()
+logger = loguru.logger
 
 
 class NewsCrawler(base.ContentRetriever):
