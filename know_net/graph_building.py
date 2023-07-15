@@ -109,16 +109,7 @@ In a groundbreaking scientific discovery, researchers at a prominent university 
 The research team, led by Dr. Amanda Reynolds, has successfully engineered an artificial leaf capable of mimicking the natural process of photosynthesis. By harnessing sunlight, water, and carbon dioxide, the artificial leaf can generate renewable energy in the form of hydrogen fuel. This breakthrough has the potential to revolutionize the way we produce and utilize clean energy.
 
 Unlike traditional solar panels, which convert sunlight directly into electricity, this new technology directly produces hydrogen gas. The artificial leaf consists of a thin, flexible silicon-based material embedded with specialized catalysts that facilitate the splitting of water molecules into hydrogen and oxygen. The generated hydrogen can then be stored and used as a clean and efficient source of energy.
-
-The key advantage of this solar-powered artificial leaf lies in its efficiency. The device can convert sunlight into hydrogen fuel with an impressive efficiency rate of 15%, surpassing the efficiency of most commercially available solar panels. This advancement brings us significantly closer to achieving a cost-effective and sustainable method of producing clean energy on a large scale.
-
-Dr. Reynolds and her team are also working on integrating the artificial leaf into existing renewable energy infrastructure. They envision a future where solar-powered artificial leaves can be easily deployed in large-scale arrays, transforming sunlight and water into hydrogen fuel, which can be utilized for various applications such as powering vehicles, heating buildings, and generating electricity.
-
-The implications of this breakthrough are far-reaching. With the demand for renewable energy on the rise, solar-powered artificial leaves have the potential to meet a substantial portion of global energy needs while reducing carbon emissions. Additionally, this technology holds promise for remote areas and developing countries, providing them with a decentralized and sustainable source of power.
-
-Industry experts and environmentalists alike are hailing this breakthrough as a game-changer in the field of renewable energy. If successfully implemented on a large scale, solar-powered artificial leaves could play a significant role in mitigating climate change and ushering in a cleaner, greener future for generations to come.
-
-As researchers continue to refine and optimize the technology, the prospects of solar-powered artificial leaves are becoming increasingly promising. With continued investment and support, this innovation could soon be a common sight, bringing us closer to achieving a more sustainable and environmentally friendly world."""
+"""
 
 if __name__ == "__main__":
     from langchain.indexes import GraphIndexCreator
