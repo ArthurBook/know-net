@@ -1,16 +1,34 @@
-from typing import List, Tuple, NamedTuple, Optional, Dict
-import networkx as nx
-from pydantic import BaseModel
-from langchain.vectorstores import Chroma
-from langchain.llms import HuggingFaceTextGenInference
-from langchain.indexes import GraphIndexCreator
-from langchain.docstore.document import Document
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.embeddings.sentence_transformer import SentenceTransformerEmbeddings
+import asyncio
+import functools
+import itertools
+from typing import (
+    Dict,
+    Generator,
+    Iterable,
+    Iterator,
+    List,
+    NamedTuple,
+    Optional,
+    Tuple,
+    cast,
+)
+
 import diskcache
+import networkx as nx
+from langchain.docstore.document import Document
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.graphs.networkx_graph import NetworkxEntityGraph
+from langchain.indexes import GraphIndexCreator
+from langchain.llms import HuggingFaceTextGenInference
+from langchain.vectorstores import Chroma
+from loguru import logger
+from pydantic import BaseModel
+
 from know_net.base import GraphBuilder
 
-from loguru import logger
+
+MAX_CONCURRENCY = 100
+logger = logger.opt(ansi=True)
 
 
 class Entity(BaseModel):
@@ -31,6 +49,8 @@ RootEntity = Entity(name="root", is_a=None)
 
 
 class LLMGraphBuilder(GraphBuilder):
+    _semaphore = asyncio.Semaphore(MAX_CONCURRENCY)
+
     def __init__(self) -> None:
         super().__init__()
         llm = HuggingFaceTextGenInference(
@@ -41,29 +61,50 @@ class LLMGraphBuilder(GraphBuilder):
             top_p=0.95,
             typical_p=0.95,
             temperature=0.01,
-        )
+        )  # type: ignore
         self.index_creator = GraphIndexCreator(llm=llm)
         self.triples: List[KGTriple] = []
-        self.embeddings = HuggingFaceEmbeddings(model_kwargs={"device": "cuda"})
+        self.embeddings = OpenAIEmbeddings()  # type: ignore
         self.vectorstore = Chroma.from_documents([], self.embeddings)
         self.match_threshold = 0.95
         self.doc_to_entity: Dict[str, Entity] = {}
         self.llm_cache = diskcache.Cache(".triples_cache")
         logger.info("Initialized LLMGraphBuilder")
 
+    def add_content_batch(self, contents: Iterable[str]) -> None:
+        contents = list(contents)  # in case of generator
+        asyncio.run(self.add_missing_contents_to_cache(contents))
+        graphs = [cast(NetworkxEntityGraph, self.llm_cache[t]) for t in contents]
+        normalized_graph_triples = map(self.normalize_graph_triples, graphs)
+        self.triples.extend(itertools.chain.from_iterable(normalized_graph_triples))
+
+    async def add_missing_contents_to_cache(self, contents: Iterable[str]) -> None:
+        missing_from_cache = itertools.filterfalse(self.is_in_cache, contents)
+        tasks = [self.add_to_cache_async(t) for t in missing_from_cache]
+        await asyncio.gather(*tasks)
+
+    async def add_to_cache_async(self, text: str) -> None:
+        async with self._semaphore:
+            entity_graph = await self.index_creator.afrom_text(text)
+            self.llm_cache[text] = entity_graph
+
     def add_content(self, content: str) -> None:
-        if content not in self.llm_cache:
-            logger.info("cache miss for content: {}", content[:18])
-            graph = self.index_creator.from_text(content)
-            self.llm_cache[content] = graph
+        if self.is_in_cache(content):
+            graph = cast(NetworkxEntityGraph, self.llm_cache[content])
         else:
-            logger.info("cache hit for content: {}", content[:18])
-            graph = self.llm_cache[content]
-        unnormalized_triples: List[Tuple[str, str, str]] = graph.get_triples()
-        normalized_triples: List[KGTriple] = [
-            self._normalize_triple(s, p, o) for s, o, p in unnormalized_triples
-        ]
-        self.triples.extend(normalized_triples)
+            self.llm_cache[content] = graph = self.index_creator.from_text(content)
+        self.triples.extend(self.normalize_graph_triples(graph))
+
+    def is_in_cache(self, text: str) -> bool:
+        hit = text in self.llm_cache
+        if hit:
+            logger.debug("cache <green>hit</green> for content: {}", text[:18])
+        else:
+            logger.debug("cache <red>miss</red> for content: {}", text[:18])
+        return hit
+
+    def normalize_graph_triples(self, graph: NetworkxEntityGraph) -> Iterator[KGTriple]:
+        return itertools.starmap(self._normalize_triple, graph.get_triples())
 
     def _normalize_triple(self, subject: str, predicate: str, object_: str) -> KGTriple:
         s = self.vectorstore.similarity_search_with_relevance_scores(subject, k=1)
