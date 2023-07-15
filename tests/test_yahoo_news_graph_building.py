@@ -12,3 +12,7 @@ if __name__ == "__main__":
     print(builder.graph)
     print(builder.triples)
     print(builder.search("hypoxaemia"))
+
+    import pickle
+    with open("builder.pkl", 'wb') as f:
+        pickle.dump(builder, f)
