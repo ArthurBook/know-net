@@ -3,7 +3,7 @@ from typing import Iterator
 import networkx as nx
 
 
-class WebScraper(abc.ABC):
+class ContentRetriever(abc.ABC):
     @abc.abstractmethod
     def __iter__(self) -> Iterator[str]:
         ...
@@ -11,12 +11,18 @@ class WebScraper(abc.ABC):
 
 class GraphBuilder(abc.ABC):
     @abc.abstractmethod
-    def add_content(self) -> None:
+    def add_content(self, content: str) -> None:
         ...
 
     @property
     @abc.abstractmethod
     def graph(self) -> nx.Graph:
+        ...
+
+
+class Retriever(abc.ABC):
+    @abc.abstractmethod
+    def get_nodes(self, question: str) -> str:
         ...
 
 

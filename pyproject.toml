@@ -10,6 +10,7 @@ packages = [{include = "know_net"}]
 python = ">=3.8.1,<4.0"
 networkx = "^3.1"
 langchain = "^0.0.234"
+beautifulsoup4 = "^4.12.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
