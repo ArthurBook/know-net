@@ -5,7 +5,7 @@ from langchain.vectorstores import Chroma
 from langchain.llms import HuggingFaceTextGenInference
 from langchain.indexes import GraphIndexCreator
 from langchain.docstore.document import Document
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.embeddings import OpenAIEmbeddings
 from langchain.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from know_net.base import GraphBuilder
 
@@ -40,13 +40,13 @@ class LLMGraphBuilder(GraphBuilder):
             top_p=0.95,
             typical_p=0.95,
             temperature=0.01,
-        )
+        )  # type: ignore
         self.index_creator = GraphIndexCreator(llm=llm)
         self.triples: List[KGTriple] = []
-        self.embeddings = HuggingFaceEmbeddings(model_kwargs={"device": "cuda"})
+        self.embeddings = OpenAIEmbeddings()  # type: ignore
         self.vectorstore = Chroma.from_documents([], self.embeddings)
         self.match_threshold = 0.95
-        self.doc_to_entity: Dict[Document, Entity] = {}
+        self.doc_to_entity: Dict[str, Entity] = {}
         logger.info("Initialized LLMGraphBuilder")
 
     def add_content(self, content: str) -> None:
