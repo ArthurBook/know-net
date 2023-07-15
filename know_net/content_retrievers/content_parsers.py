@@ -1,7 +1,7 @@
 import abc
-from typing_extensions import Annotated
 
 import bs4
+from typing_extensions import Annotated
 
 
 class ContentParser(abc.ABC):
