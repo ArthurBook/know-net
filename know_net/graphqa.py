@@ -1,68 +1,19 @@
+"""
+Adapted: https://github.com/hwchase17/langchain/blob/master/langchain/chains/graph_qa/base.py
+to query vectors
+"""
+
 from __future__ import annotations
-from langchain.indexes import GraphIndexCreator
-from langchain.llms import OpenAI
-from langchain.document_loaders import TextLoader
-from langchain.chains import GraphQAChain
+import networkx as nx
 from typing import Any, Dict, List, Optional
-
-from pydantic import Field
-
-from langchain.callbacks.manager import CallbackManagerForChainRun
-from langchain.chains.base import Chain
-from langchain.chains.graph_qa.prompts import ENTITY_EXTRACTION_PROMPT, GRAPH_QA_PROMPT
-from langchain.chains.llm import LLMChain
-from langchain.graphs.networkx_graph import NetworkxEntityGraph, get_entities
-from know_net.graph_building import LLMGraphBuilder
-from langchain.schema import BasePromptTemplate
-from langchain.schema.language_model import BaseLanguageModel
-
 from langchain.chains import GraphQAChain
+from langchain.callbacks.manager import CallbackManagerForChainRun
+from langchain.graphs.networkx_graph import get_entities
+from know_net.graph_building import LLMGraphBuilder
+from loguru import logger
 
 
-class VecGraphQAChain(Chain):
-    """Chain for question-answering against a graph."""
-
-    graph: LLMGraphBuilder = Field(exclude=True)
-    entity_extraction_chain: LLMChain
-    qa_chain: LLMChain
-    input_key: str = "query"  #: :meta private:
-    output_key: str = "result"  #: :meta private:
-
-    @property
-    def input_keys(self) -> List[str]:
-        """Return the input keys.
-
-        :meta private:
-        """
-        return [self.input_key]
-
-    @property
-    def output_keys(self) -> List[str]:
-        """Return the output keys.
-
-        :meta private:
-        """
-        _output_keys = [self.output_key]
-        return _output_keys
-
-    @classmethod
-    def from_llm(
-        cls,
-        llm: BaseLanguageModel,
-        qa_prompt: BasePromptTemplate = GRAPH_QA_PROMPT,
-        entity_prompt: BasePromptTemplate = ENTITY_EXTRACTION_PROMPT,
-        **kwargs: Any,
-    ) -> GraphQAChain:
-        """Initialize from LLM."""
-        qa_chain = LLMChain(llm=llm, prompt=qa_prompt)
-        entity_chain = LLMChain(llm=llm, prompt=entity_prompt)
-
-        return cls(
-            qa_chain=qa_chain,
-            entity_extraction_chain=entity_chain,
-            **kwargs,
-        )
-
+class VecGraphQAChain(GraphQAChain):
     def _call(
         self,
         inputs: Dict[str, Any],
@@ -79,7 +30,7 @@ class VecGraphQAChain(Chain):
             entity_string, color="green", end="\n", verbose=self.verbose
         )
         entities = get_entities(entity_string)
-        print("found entities", entities)
+        logger.info("found entities: {}", entities)
         context = ""
         all_triplets = []
         for entity in entities:
@@ -95,26 +46,22 @@ class VecGraphQAChain(Chain):
         return {self.output_key: result[self.qa_chain.output_key]}
 
 
-def get_entity_knowledge(graph: LLMGraphBuilder, entity: str):
-    triplets = []
+def get_entity_knowledge(graph: LLMGraphBuilder, entity: str) -> List[str]:
+    triplets: List[str] = []
     results = graph.vectorstore.similarity_search_with_relevance_scores(entity)
-    for doc, score in results:
+    for doc, _ in results:
         entity = graph.doc_to_entity[doc.page_content]
-        print("entity:", entity)
+        logger.info("entity: {}", entity)
         trip_str = str(get_entity_triples(graph.graph, entity))
-        print("trip str:", trip_str)
+        logger.info("triple string: {}", trip_str)
         triplets.append(trip_str)
     return triplets
-
-
-import networkx as nx
 
 
 def get_entity_triples(graph: nx.Graph, entity: str, depth: int = 1) -> List[str]:
     """Get information about an entity."""
     import networkx as nx
 
-    # TODO: Have more information-specific retrieval methods
     if not graph.has_node(entity):
         return []
 

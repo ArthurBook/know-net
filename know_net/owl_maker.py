@@ -1,225 +1,227 @@
-from langchain import BasePromptTemplate
+import os
 from langchain.chat_models.openai import ChatOpenAI
 from langchain.chains.llm import LLMChain
 from langchain.prompts.prompt import PromptTemplate
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.llms import HuggingFaceTextGenInference
 from know_net.graph_building import LLMGraphBuilder
 
 import pickle
 
-with open("builder3.pkl", "rb") as f:
-    graph = pickle.load(f)
-graph: LLMGraphBuilder
 
-_PROMPT = """Given the following knowledge graph triples:
-   triples: {triples}.
-  Please extend the following Turtle OWL ontology.
-  ontology: {ontology}.
+def main() -> None:
+    builder_path = os.environ["BUILDER_PKL_PATH"]
+    with open(builder_path, "rb") as f:
+        graph = pickle.load(f)
+    graph: LLMGraphBuilder
 
-  Your ontology should be purely additional on top of the above ontology.
-  I should be able to simply append what you give me to the above ontology and load it directly into Protege.
+    _PROMPT = """Given the following knowledge graph triples:
+    triples: {triples}.
+    Please extend the following Turtle OWL ontology.
+    ontology: {ontology}.
 
- Output the result in JSON:
-   {{"turtle": "value"}} with no other text please.
-"""
-prompt = PromptTemplate(
-    input_variables=["triples", "ontology"],
-    template=_PROMPT,
-)
-llm = ChatOpenAI(temperature=0, model="gpt-4")
-chain = LLMChain(llm=llm, prompt=prompt)
-TRIPLES = """['(Cybertruck, is on its way to, consumers)', '(Cybertruck, rolled off, Giga Texas assembly line)', '(Cybertruck, is a, production intent model)', '(Cybertruck, is on track to meet, timeline)', '(Cybertruck, takes time to get, manufacturing line going)', '(Cybertruck, is a, radical product)', '(Cybertruck, is not made in the way that, other cars are made)', '(Cybertruck, is, first production)', '(Cybertruck, is, electric pickup)', '(Cybertruck, has rolled off, assembly line)', '(assembly line, is, off)', '(Cybertruck, is, off the assembly line)', '(Cybertruck, is, two years behind the original schedule)', '(Cybertruck, looks, nothing like a traditional pickup)', '(Cybertruck, built, Tesla)', '(Tesla, designed, the new vehicle)', '(Tesla, would hold, Cybertruck delivery event in the third quarter of 2023)', '(Tesla, has encountered, repeated bottlenecks involving next-generation 4680 battery)', '(Tesla, said, vehicle would start at $39,900 for single-motor variant)', '(Tesla, says, its first production Cybertruck electric pickup has rolled off the assembly line)', '(Tesla, had said, production would start in late 2021)', '(Tesla, originally said, it would make three versions of the truck)', '(Tesla, is scheduled to report, second-quarter financial results)', '(Cybertruck, introduced by, Elon Musk)', '(Elon Musk, introduced, pickup truck)']"""
-ONT = """@prefix : <http://www.semanticweb.org/ontologies/technology#> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+    Your ontology should be purely additional on top of the above ontology.
+    I should be able to simply append what you give me to the above ontology and load it directly into Protege.
 
-: a owl:Ontology .
+    Output the result in JSON:
+    {{"turtle": "value"}} with no other text please.
+    """
+    prompt = PromptTemplate(
+        input_variables=["triples", "ontology"],
+        template=_PROMPT,
+    )
+    llm = ChatOpenAI(temperature=0, model="gpt-4")
+    chain = LLMChain(llm=llm, prompt=prompt)
+    ONT = """@prefix : <http://www.semanticweb.org/ontologies/technology#> .
+    @prefix owl: <http://www.w3.org/2002/07/owl#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-:Technology a owl:Class .
+    : a owl:Ontology .
 
-:Hardware a owl:Class ;
-    rdfs:subClassOf :Technology .
+    :Technology a owl:Class .
 
-:Software a owl:Class ;
-    rdfs:subClassOf :Technology .
+    :Hardware a owl:Class ;
+        rdfs:subClassOf :Technology .
 
-:AI a owl:Class ;
-    rdfs:subClassOf :Software .
+    :Software a owl:Class ;
+        rdfs:subClassOf :Technology .
 
-:MachineLearning a owl:Class ;
-    rdfs:subClassOf :AI .
+    :AI a owl:Class ;
+        rdfs:subClassOf :Software .
 
-:DeepLearning a owl:Class ;
-    rdfs:subClassOf :MachineLearning .
+    :MachineLearning a owl:Class ;
+        rdfs:subClassOf :AI .
 
-:Robotics a owl:Class ;
-    rdfs:subClassOf :Hardware .
+    :DeepLearning a owl:Class ;
+        rdfs:subClassOf :MachineLearning .
 
-:Drone a owl:Class ;
-    rdfs:subClassOf :Robotics .
+    :Robotics a owl:Class ;
+        rdfs:subClassOf :Hardware .
 
-:Computer a owl:Class ;
-    rdfs:subClassOf :Hardware .
+    :Drone a owl:Class ;
+        rdfs:subClassOf :Robotics .
 
-:Smartphone a owl:Class ;
-    rdfs:subClassOf :Hardware .
+    :Computer a owl:Class ;
+        rdfs:subClassOf :Hardware .
 
-:OperatingSystem a owl:Class ;
-    rdfs:subClassOf :Software .
+    :Smartphone a owl:Class ;
+        rdfs:subClassOf :Hardware .
 
-:Linux a owl:Class ;
-    rdfs:subClassOf :OperatingSystem .
+    :OperatingSystem a owl:Class ;
+        rdfs:subClassOf :Software .
 
-:Windows a owl:Class ;
-    rdfs:subClassOf :OperatingSystem .
+    :Linux a owl:Class ;
+        rdfs:subClassOf :OperatingSystem .
 
-:MacOS a owl:Class ;
-    rdfs:subClassOf :OperatingSystem .
+    :Windows a owl:Class ;
+        rdfs:subClassOf :OperatingSystem .
 
-:Android a owl:Class ;
-    rdfs:subClassOf :OperatingSystem .
+    :MacOS a owl:Class ;
+        rdfs:subClassOf :OperatingSystem .
 
-:iOS a owl:Class ;
-    rdfs:subClassOf :OperatingSystem .
+    :Android a owl:Class ;
+        rdfs:subClassOf :OperatingSystem .
 
-:Person a owl:Class .
+    :iOS a owl:Class ;
+        rdfs:subClassOf :OperatingSystem .
 
-:Developer a owl:Class ;
-    rdfs:subClassOf :Person .
+    :Person a owl:Class .
 
-:Researcher a owl:Class ;
-    rdfs:subClassOf :Person .
+    :Developer a owl:Class ;
+        rdfs:subClassOf :Person .
 
-:CEO a owl:Class ;
-    rdfs:subClassOf :Person .
+    :Researcher a owl:Class ;
+        rdfs:subClassOf :Person .
 
-:Company a owl:Class .
+    :CEO a owl:Class ;
+        rdfs:subClassOf :Person .
 
-:Startup a owl:Class ;
-    rdfs:subClassOf :Company .
+    :Company a owl:Class .
 
-:Multinational a owl:Class ;
-    rdfs:subClassOf :Company .
+    :Startup a owl:Class ;
+        rdfs:subClassOf :Company .
 
-:Innovation a owl:Class .
+    :Multinational a owl:Class ;
+        rdfs:subClassOf :Company .
 
-:Patent a owl:Class ;
-    rdfs:subClassOf :Innovation .
+    :Innovation a owl:Class .
 
-:ResearchPaper a owl:Class ;
-    rdfs:subClassOf :Innovation .
+    :Patent a owl:Class ;
+        rdfs:subClassOf :Innovation .
 
-:News a owl:Class .
+    :ResearchPaper a owl:Class ;
+        rdfs:subClassOf :Innovation .
 
-:BlogPost a owl:Class ;
-    rdfs:subClassOf :News .
+    :News a owl:Class .
 
-:PressRelease a owl:Class ;
-    rdfs:subClassOf :News .
+    :BlogPost a owl:Class ;
+        rdfs:subClassOf :News .
 
-:Conference a owl:Class .
+    :PressRelease a owl:Class ;
+        rdfs:subClassOf :News .
 
-:Webinar a owl:Class ;
-    rdfs:subClassOf :Conference .
+    :Conference a owl:Class .
 
-:Seminar a owl:Class ;
-    rdfs:subClassOf :Conference .
+    :Webinar a owl:Class ;
+        rdfs:subClassOf :Conference .
 
-:Product a owl:Class .
+    :Seminar a owl:Class ;
+        rdfs:subClassOf :Conference .
 
-:SoftwareProduct a owl:Class ;
-    rdfs:subClassOf :Product .
+    :Product a owl:Class .
 
-:HardwareProduct a owl:Class ;
-    rdfs:subClassOf :Product .
+    :SoftwareProduct a owl:Class ;
+        rdfs:subClassOf :Product .
 
-:Service a owl:Class .
+    :HardwareProduct a owl:Class ;
+        rdfs:subClassOf :Product .
 
-:CloudService a owl:Class ;
-    rdfs:subClassOf :Service .
+    :Service a owl:Class .
 
-:ConsultingService a owl:Class ;
-    rdfs:subClassOf :Service .
+    :CloudService a owl:Class ;
+        rdfs:subClassOf :Service .
 
-:Investment a owl:Class .
+    :ConsultingService a owl:Class ;
+        rdfs:subClassOf :Service .
 
-:VentureCapital a owl:Class ;
-    rdfs:subClassOf :Investment .
+    :Investment a owl:Class .
 
-:Acquisition a owl:Class ;
-    rdfs:subClassOf :Investment .
+    :VentureCapital a owl:Class ;
+        rdfs:subClassOf :Investment .
 
-:Regulation a owl:Class .
+    :Acquisition a owl:Class ;
+        rdfs:subClassOf :Investment .
 
-:PrivacyPolicy a owl:Class ;
-    rdfs:subClassOf :Regulation .
+    :Regulation a owl:Class .
 
-:DataProtection a owl:Class ;
-    rdfs:subClassOf :Regulation .
+    :PrivacyPolicy a owl:Class ;
+        rdfs:subClassOf :Regulation .
 
-:worksFor a owl:ObjectProperty ;
-    rdfs:domain :Person ;
-    rdfs:range :Company .
+    :DataProtection a owl:Class ;
+        rdfs:subClassOf :Regulation .
 
-:develops a owl:ObjectProperty ;
-    rdfs:domain :Developer ;
-    rdfs:range :Product .
+    :worksFor a owl:ObjectProperty ;
+        rdfs:domain :Person ;
+        rdfs:range :Company .
 
-:investsIn a owl:ObjectProperty ;
-    rdfs:domain :VentureCapital ;
-    rdfs:range :Startup .
+    :develops a owl:ObjectProperty ;
+        rdfs:domain :Developer ;
+        rdfs:range :Product .
 
-:publishes a owl:ObjectProperty ;
-    rdfs:domain :Researcher ;
-    rdfs:range :ResearchPaper .
+    :investsIn a owl:ObjectProperty ;
+        rdfs:domain :VentureCapital ;
+        rdfs:range :Startup .
 
-:attends a owl:ObjectProperty ;
-    rdfs:domain :Person ;
-    rdfs:range :Conference .
+    :publishes a owl:ObjectProperty ;
+        rdfs:domain :Researcher ;
+        rdfs:range :ResearchPaper .
 
-:owns a owl:ObjectProperty ;
-    rdfs:domain :Company ;
-    rdfs:range :Product .
+    :attends a owl:ObjectProperty ;
+        rdfs:domain :Person ;
+        rdfs:range :Conference .
 
-:regulates a owl:ObjectProperty ;
-    rdfs:domain :Regulation ;
-    rdfs:range :Company .
-"""
+    :owns a owl:ObjectProperty ;
+        rdfs:domain :Company ;
+        rdfs:range :Product .
 
+    :regulates a owl:ObjectProperty ;
+        rdfs:domain :Regulation ;
+        rdfs:range :Company .
+    """
 
-def create_batches(long_list, bs: int = 16):
-    batch_size = bs
-    num_batches = len(long_list) // batch_size
-    remainder = len(long_list) % batch_size
+    def create_batches(long_list, bs: int = 16):
+        batch_size = bs
+        num_batches = len(long_list) // batch_size
+        remainder = len(long_list) % batch_size
 
-    batches = []
-    start_index = 0
+        batches = []
+        start_index = 0
 
-    for i in range(num_batches):
-        end_index = start_index + batch_size
-        batch = long_list[start_index:end_index]
-        batches.append(batch)
-        start_index = end_index
+        for i in range(num_batches):
+            end_index = start_index + batch_size
+            batch = long_list[start_index:end_index]
+            batches.append(batch)
+            start_index = end_index
 
-    if remainder != 0:
-        last_batch = long_list[-remainder:]
-        batches.append(last_batch)
+        if remainder != 0:
+            last_batch = long_list[-remainder:]
+            batches.append(last_batch)
 
-    return batches
+        return batches
 
+    import json
 
-import json
+    for i, nodes in enumerate(create_batches(graph.triples)):
+        print(i)
+        try:
+            res = chain.predict(triples=nodes, ontology=ONT)
+            t = res.replace("\n", "\\n")
+            d = json.loads(t)
+            turtle = d["turtle"]
+            with open(f"data/turtle_{i}", "w") as f:
+                f.write(turtle)
+        except KeyboardInterrupt:
+            break
 
-for i, nodes in enumerate(create_batches(graph.triples)):
-    print(i)
-    try:
-        res = chain.predict(triples=nodes, ontology=ONT)
-        t = res.replace("\n", "\\n")
-        d = json.loads(t)
-        turtle = d["turtle"]
-        with open(f"data/turtle_{i}", "w") as f:
-            f.write(turtle)
-    except KeyboardInterrupt:
-        break
+
+if __name__ == "__main__":
+    main()
