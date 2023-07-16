@@ -1,8 +1,10 @@
+import os
+import pickle
+
 import streamlit as st
 from langchain.chat_models import ChatOpenAI
-import pickle
+
 from know_net.graph_building import LLMGraphBuilder
-import os
 from know_net.graphqa import VecGraphQAChain
 
 # Path to the .env file
@@ -37,7 +39,8 @@ if "messages" not in st.session_state:
 with open("builder2.pkl", "rb") as f:
     client = pickle.load(f)
 client: LLMGraphBuilder
-qa = VecGraphQAChain.from_llm(ChatOpenAI(temperature=0), graph=client, verbose=True)
+llm = ChatOpenAI(temperature=0)  # type: ignore
+qa = VecGraphQAChain.from_llm(llm, graph=client, verbose=True)
 
 
 if prompt := st.chat_input("Start chat"):

@@ -1,24 +1,20 @@
 from __future__ import annotations
-import itertools
-from langchain.indexes import GraphIndexCreator
-from langchain.llms import OpenAI
-from langchain.document_loaders import TextLoader
-from langchain.chains import GraphQAChain
-from typing import Any, Dict, List, NamedTuple, Optional
 
-from pydantic import Field
+import itertools
+from typing import Any, Dict, List, NamedTuple, Optional
 
 from langchain.callbacks.manager import CallbackManagerForChainRun
 from langchain.chains.base import Chain
 from langchain.chains.graph_qa.prompts import ENTITY_EXTRACTION_PROMPT, GRAPH_QA_PROMPT
 from langchain.chains.llm import LLMChain
-from langchain.graphs.networkx_graph import NetworkxEntityGraph, get_entities
-from know_net import graph_building
-from know_net.graph_building import Entity, LLMGraphBuilder
+from langchain.graphs.networkx_graph import get_entities
 from langchain.schema import BasePromptTemplate
 from langchain.schema.language_model import BaseLanguageModel
+from pydantic import Field
+from typing_extensions import Self
 
-from langchain.chains import GraphQAChain
+from know_net import graph_building
+from know_net.graph_building import Entity, LLMGraphBuilder
 
 
 class VecGraphQAChain(Chain):
@@ -54,7 +50,7 @@ class VecGraphQAChain(Chain):
         qa_prompt: BasePromptTemplate = GRAPH_QA_PROMPT,
         entity_prompt: BasePromptTemplate = ENTITY_EXTRACTION_PROMPT,
         **kwargs: Any,
-    ) -> GraphQAChain:
+    ) -> Self:
         """Initialize from LLM."""
         qa_chain = LLMChain(llm=llm, prompt=qa_prompt)
         entity_chain = LLMChain(llm=llm, prompt=entity_prompt)
