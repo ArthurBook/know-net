@@ -1,23 +1,13 @@
 import asyncio
-import functools
 import itertools
-from typing import (
-    Coroutine,
-    Dict,
-    Generator,
-    Iterable,
-    Iterator,
-    List,
-    NamedTuple,
-    Optional,
-    Tuple,
-    cast,
-)
+from typing import Dict, Iterable, Iterator, List, NamedTuple, Optional, cast
 
 import diskcache
+from langchain import FAISS
 import networkx as nx
-from langchain.embeddings import base as embeddings_base, openai as openai_embeddings
 from langchain.docstore.document import Document
+from langchain.embeddings import base as embeddings_base
+from langchain.embeddings import openai as openai_embeddings
 from langchain.graphs.networkx_graph import NetworkxEntityGraph
 from langchain.indexes import GraphIndexCreator
 from langchain.llms import base as llm_base
@@ -76,7 +66,7 @@ class LLMGraphBuilder(GraphBuilder):
 
         self.index_creator = GraphIndexCreator(llm=self.llm)
 
-        self.vectorstore = get_chroma_vectorstore(self.embeddings)
+        self.vectorstore = get_faiss_vectorstore(self.embeddings)
         self.llm_cache = get_cache_triples_cache(self.llm)
 
         self.doc_to_entity: Dict[str, Entity] = {}
@@ -168,6 +158,15 @@ class LLMGraphBuilder(GraphBuilder):
         else:
             logger.debug("cache <red>miss</red> for content: {}", text[:18])
         return hit
+
+
+def get_faiss_vectorstore(embedder: embeddings_base.Embeddings) -> FAISS:
+    if isinstance(embedder, openai_embeddings.OpenAIEmbeddings):
+        name = embedder.model
+    else:
+        name = embedder.__class__.__name__
+        logger.warning("Unknown llm type: {}", name)
+    return FAISS.from_texts(["root"], embedding=embedder)  # type: ignore
 
 
 def get_chroma_vectorstore(embedder: embeddings_base.Embeddings) -> Chroma:

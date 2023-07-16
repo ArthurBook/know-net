@@ -6,9 +6,15 @@ if __name__ == "__main__":
 
     builder = graph_building.LLMGraphBuilder()
     scraper = news_site_crawler.NewsCrawler(test_url)
+    news = list(scraper)
 
-    builder.add_content_batch(scraper)
+    builder.add_content_batch(news)
 
     print(builder.graph)
     print(builder.triples)
-    print(builder.vectorstore.similarity_search_with_relevance_scores("elon musk"))
+    print(builder.search("elon"))
+
+    import pickle
+
+    with open("builder3.pkl", "wb") as f:
+        pickle.dump(builder, f)
