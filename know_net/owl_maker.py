@@ -4,11 +4,21 @@ from langchain.chains.llm import LLMChain
 from langchain.prompts.prompt import PromptTemplate
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.llms import HuggingFaceTextGenInference
+from know_net.graph_building import LLMGraphBuilder
+
+import pickle
+
+with open("builder3.pkl", "rb") as f:
+    graph = pickle.load(f)
+graph: LLMGraphBuilder
 
 _PROMPT = """Given the following knowledge graph triples:
    triples: {triples}.
   Please extend the following Turtle OWL ontology.
   ontology: {ontology}.
+
+  Your ontology should be purely additional on top of the above ontology.
+  I should be able to simply append what you give me to the above ontology and load it directly into Protege.
 
  Output the result in JSON:
    {{"turtle": "value"}} with no other text please.
@@ -177,5 +187,39 @@ ONT = """@prefix : <http://www.semanticweb.org/ontologies/technology#> .
     rdfs:domain :Regulation ;
     rdfs:range :Company .
 """
-res = chain.predict(triples=TRIPLES, ontology=ONT)
-print(res)
+
+
+def create_batches(long_list, bs: int = 16):
+    batch_size = bs
+    num_batches = len(long_list) // batch_size
+    remainder = len(long_list) % batch_size
+
+    batches = []
+    start_index = 0
+
+    for i in range(num_batches):
+        end_index = start_index + batch_size
+        batch = long_list[start_index:end_index]
+        batches.append(batch)
+        start_index = end_index
+
+    if remainder != 0:
+        last_batch = long_list[-remainder:]
+        batches.append(last_batch)
+
+    return batches
+
+
+import json
+
+for i, nodes in enumerate(create_batches(graph.triples)):
+    print(i)
+    try:
+        res = chain.predict(triples=nodes, ontology=ONT)
+        t = res.replace("\n", "\\n")
+        d = json.loads(t)
+        turtle = d["turtle"]
+        with open(f"data/turtle_{i}", "w") as f:
+            f.write(turtle)
+    except KeyboardInterrupt:
+        break

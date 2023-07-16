@@ -1,0 +1,43 @@
+:Building a owl:Class .
+
+:OfficeBuilding a owl:Class ;
+    rdfs:subClassOf :Building .
+
+:ResidentialBuilding a owl:Class ;
+    rdfs:subClassOf :Building .
+
+:Owner a owl:Class .
+
+:Institution a owl:Class .
+
+:BrookingsInstitution a owl:Class ;
+    rdfs:subClassOf :Institution .
+
+:AdvocacyOrganization a owl:Class .
+
+:SmartGrowthAdvocacyOrganization a owl:Class ;
+    rdfs:subClassOf :AdvocacyOrganization .
+
+:StrongTowns a owl:Class ;
+    rdfs:subClassOf :SmartGrowthAdvocacyOrganization .
+
+:HVACSystem a owl:Class .
+
+:IndividualHVACSystem a owl:Class ;
+    rdfs:subClassOf :HVACSystem .
+
+:owns a owl:ObjectProperty ;
+    rdfs:domain :Owner ;
+    rdfs:range :Building .
+
+:concludes a owl:ObjectProperty ;
+    rdfs:domain :Institution ;
+    rdfs:range :ResearchPaper .
+
+:notes a owl:ObjectProperty ;
+    rdfs:domain :AdvocacyOrganization ;
+    rdfs:range :News .
+
+:needs a owl:ObjectProperty ;
+    rdfs:domain :ResidentialBuilding ;
+    rdfs:range :IndividualHVACSystem .

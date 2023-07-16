@@ -1,0 +1,79 @@
+:Building a owl:Class .
+
+:OfficeBuilding a owl:Class ;
+    rdfs:subClassOf :Building .
+
+:IndustrialBuilding a owl:Class ;
+    rdfs:subClassOf :Building .
+
+:ResidentialBuilding a owl:Class ;
+    rdfs:subClassOf :Building .
+
+:Hotel a owl:Class ;
+    rdfs:subClassOf :Building .
+
+:Conversion a owl:Class .
+
+:Cost a owl:Class .
+
+:Renovation a owl:Class .
+
+:Demolition a owl:Class .
+
+:Executive a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:RealEstateDevelopmentFirm a owl:Class ;
+    rdfs:subClassOf :Company .
+
+:NewsWebsite a owl:Class .
+
+:InteriorSystem a owl:Class .
+
+:Elevator a owl:Class .
+
+:Construction a owl:Class .
+
+:convertedTo a owl:ObjectProperty ;
+    rdfs:domain :Building ;
+    rdfs:range :Building .
+
+:foundIn a owl:ObjectProperty ;
+    rdfs:domain :Study ;
+    rdfs:range :Conversion .
+
+:isFeasible a owl:ObjectProperty ;
+    rdfs:domain :Conversion ;
+    rdfs:range :xsd:boolean .
+
+:averageCost a owl:ObjectProperty ;
+    rdfs:domain :Cost ;
+    rdfs:range :xsd:decimal .
+
+:comparedTo a owl:ObjectProperty ;
+    rdfs:domain :Renovation ;
+    rdfs:range :Construction .
+
+:isBig a owl:ObjectProperty ;
+    rdfs:domain :Demolition ;
+    rdfs:range :xsd:boolean .
+
+:worksAt a owl:ObjectProperty ;
+    rdfs:domain :Executive ;
+    rdfs:range :RealEstateDevelopmentFirm .
+
+:told a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :NewsWebsite .
+
+:isPartOf a owl:ObjectProperty ;
+    rdfs:domain :InteriorSystem ;
+    rdfs:range :Building .
+
+:isPartOf a owl:ObjectProperty ;
+    rdfs:domain :Elevator ;
+    rdfs:range :Building .
+
+:isCost a owl:ObjectProperty ;
+    rdfs:domain :Construction ;
+    rdfs:range :Cost .

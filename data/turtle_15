@@ -1,0 +1,47 @@
+:Politician a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:Veteran a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:Mom a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:Election a owl:Class .
+
+:District a owl:Class .
+
+:Issue a owl:Class .
+
+:AbortionRights a owl:Class ;
+    rdfs:subClassOf :Issue .
+
+:Policy a owl:Class .
+
+:PentagonPolicy a owl:Class ;
+    rdfs:subClassOf :Policy .
+
+:Provision a owl:Class .
+
+:GOPProvision a owl:Class ;
+    rdfs:subClassOf :Provision .
+
+:wonElection a owl:ObjectProperty ;
+    rdfs:domain :Politician ;
+    rdfs:range :Election .
+
+:represents a owl:ObjectProperty ;
+    rdfs:domain :Politician ;
+    rdfs:range :District .
+
+:focusesOn a owl:ObjectProperty ;
+    rdfs:domain :Politician ;
+    rdfs:range :Issue .
+
+:votes a owl:ObjectProperty ;
+    rdfs:domain :Politician ;
+    rdfs:range :Provision .
+
+:reverses a owl:ObjectProperty ;
+    rdfs:domain :Provision ;
+    rdfs:range :Policy .

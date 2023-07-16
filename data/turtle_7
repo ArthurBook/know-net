@@ -1,0 +1,55 @@
+:ElectronicLogs a owl:Class ;
+    rdfs:subClassOf :Technology .
+
+:ElectronicMonitoring a owl:Class ;
+    rdfs:subClassOf :Technology .
+
+:TruckSafetyCoalition a owl:Class .
+
+:Legislation a owl:Class .
+
+:JensStoltenberg a :Person .
+
+:PresidentErdogan a :Person .
+
+:Memorandum a owl:Class .
+
+:willViolate a owl:ObjectProperty ;
+    rdfs:domain :ElectronicLogs ;
+    rdfs:range :Technology .
+
+:hasCreated a owl:ObjectProperty ;
+    rdfs:domain :ElectronicMonitoring ;
+    rdfs:range :Technology .
+
+:seeksToReduce a owl:ObjectProperty ;
+    rdfs:domain :TruckSafetyCoalition ;
+    rdfs:range :Technology .
+
+:seeks a owl:ObjectProperty ;
+    rdfs:domain :Legislation ;
+    rdfs:range :Technology .
+
+:announced a owl:ObjectProperty ;
+    rdfs:domain :JensStoltenberg ;
+    rdfs:range :Person .
+
+:hadAConstructiveMeetingWith a owl:ObjectProperty ;
+    rdfs:domain :JensStoltenberg ;
+    rdfs:range :Person .
+
+:agreedToForward a owl:ObjectProperty ;
+    rdfs:domain :PresidentErdogan ;
+    rdfs:range :Technology .
+
+:workCloselyWith a owl:ObjectProperty ;
+    rdfs:domain :PresidentErdogan ;
+    rdfs:range :Technology .
+
+:agreed a owl:ObjectProperty ;
+    rdfs:domain :PresidentErdogan ;
+    rdfs:range :Memorandum .
+
+:delivered a owl:ObjectProperty ;
+    rdfs:domain :Memorandum ;
+    rdfs:range :Technology .

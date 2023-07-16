@@ -1,0 +1,77 @@
+:AbortionBan a owl:Class .
+
+:MedicalRecord a owl:Class .
+
+:Evidence a owl:Class .
+
+:WitnessDescription a owl:Class .
+
+:FemaleVictim a owl:Class .
+
+:Knife a owl:Class .
+
+:MentalAsylum a owl:Class .
+
+:Wife a owl:Class .
+
+:Mother a owl:Class .
+
+:Epilepsy a owl:Class .
+
+:EpilepticFit a owl:Class .
+
+:wasASteppingstone a owl:ObjectProperty ;
+    rdfs:domain :AbortionBan ;
+    rdfs:range :AbortionBan .
+
+:merelyPreserved a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :AbortionBan .
+
+:putLawmakersIn a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .
+
+:hasUnearthed a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Evidence .
+
+:gainedAccessTo a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :MedicalRecord .
+
+:matches a owl:ObjectProperty ;
+    rdfs:domain :Evidence ;
+    rdfs:range :WitnessDescription .
+
+:seenWith a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :FemaleVictim .
+
+:livedIn a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Area .
+
+:knewHowToUse a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Knife .
+
+:wasInAndOutOf a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :MentalAsylum .
+
+:attacked a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .
+
+:wasWeakAt a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :BodyPart .
+
+:hadTheMostSevereFormOf a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Epilepsy .
+
+:wasParticularlyViolentAfter a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :EpilepticFit .

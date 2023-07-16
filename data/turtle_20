@@ -1,0 +1,64 @@
+:Property a owl:Class .
+
+:Land a owl:Class ;
+    rdfs:subClassOf :Property .
+
+:LegalBattle a owl:Class .
+
+:PropertyDeveloper a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:ResidentialDevelopment a owl:Class ;
+    rdfs:subClassOf :Property .
+
+:acquiresDeedIn a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :xsd:dateTime .
+
+:acquiresDeedAfter a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :xsd:dateTime .
+
+:lateHusbandOf a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .
+
+:hadBeenIn a owl:ObjectProperty ;
+    rdfs:domain :Property ;
+    rdfs:range :Person .
+
+:isAtCenterOf a owl:ObjectProperty ;
+    rdfs:domain :Land ;
+    rdfs:range :LegalBattle .
+
+:isDrawingRenewedAttentionTo a owl:ObjectProperty ;
+    rdfs:domain :LegalBattle ;
+    rdfs:range :xsd:string .
+
+:lookingToBuild a owl:ObjectProperty ;
+    rdfs:domain :PropertyDeveloper ;
+    rdfs:range :ResidentialDevelopment .
+
+:planningToConstruct a owl:ObjectProperty ;
+    rdfs:domain :PropertyDeveloper ;
+    rdfs:range :xsd:integer .
+
+:showedUpAt a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :xsd:string .
+
+:offered a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :xsd:decimal .
+
+:filedAnswerTo a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :xsd:string .
+
+:deniedAll a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :xsd:string .
+
+:filedLawsuitAgainst a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .

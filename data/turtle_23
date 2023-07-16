@@ -1,0 +1,39 @@
+:Crime a owl:Class .
+
+:PersonInvolved a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:PoliceDepartment a owl:Class .
+
+:DistrictAttorneyOffice a owl:Class .
+
+:Prosecutor a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:Arrest a owl:Class ;
+    rdfs:subClassOf :Crime .
+
+:Indictment a owl:Class ;
+    rdfs:subClassOf :Crime .
+
+:MissingPerson a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:UnsolvedCase a owl:Class ;
+    rdfs:subClassOf :Crime .
+
+:arrestedBy a owl:ObjectProperty ;
+    rdfs:domain :PersonInvolved ;
+    rdfs:range :PoliceDepartment .
+
+:indictedBy a owl:ObjectProperty ;
+    rdfs:domain :PersonInvolved ;
+    rdfs:range :DistrictAttorneyOffice .
+
+:foundBy a owl:ObjectProperty ;
+    rdfs:domain :MissingPerson ;
+    rdfs:range :PoliceDepartment .
+
+:saidBy a owl:ObjectProperty ;
+    rdfs:domain :Crime ;
+    rdfs:range :Prosecutor .

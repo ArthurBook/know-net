@@ -35,9 +35,10 @@ if "messages" not in st.session_state:
 #         st.markdown(message["content"])
 
 with open("builder3.pkl", "rb") as f:
-    client = pickle.load(f)
-client: LLMGraphBuilder
-qa = VecGraphQAChain.from_llm(ChatOpenAI(temperature=0), graph=client, verbose=True)
+    graph = pickle.load(f)
+graph: LLMGraphBuilder
+qa = VecGraphQAChain.from_llm(ChatOpenAI(temperature=0), graph=graph, verbose=True)
+print(graph.graph)
 
 
 if prompt := st.chat_input("Start chat"):

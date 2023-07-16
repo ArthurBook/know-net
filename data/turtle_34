@@ -1,0 +1,48 @@
+:SleepingPosition a owl:Class .
+
+:SleepingOnStomach a owl:Class ;
+    rdfs:subClassOf :SleepingPosition .
+
+:MuscleStrain a owl:Class .
+
+:Stretching a owl:Class .
+
+:Breathing a owl:Class .
+
+:WeightLifting a owl:Class .
+
+:contributesToCompression a owl:ObjectProperty ;
+    rdfs:domain :SleepingOnStomach ;
+    rdfs:range :BodyPart .
+
+:contributesToSymptoms a owl:ObjectProperty ;
+    rdfs:domain :SleepingOnStomach ;
+    rdfs:range :Symptom .
+
+:causes a owl:ObjectProperty ;
+    rdfs:domain :SleepingOnStomach ;
+    rdfs:range :Symptom .
+
+:dueTo a owl:ObjectProperty ;
+    rdfs:domain :MuscleStrain ;
+    rdfs:range :Activity .
+
+:leadsTo a owl:ObjectProperty ;
+    rdfs:domain :MuscleStrain ;
+    rdfs:range :Symptom .
+
+:contributesTo a owl:ObjectProperty ;
+    rdfs:domain :Stretching ;
+    rdfs:range :Symptom .
+
+:reIntroduced a owl:ObjectProperty ;
+    rdfs:domain :Stretching ;
+    rdfs:range :Time .
+
+:effectsOn a owl:ObjectProperty ;
+    rdfs:domain :Breathing ;
+    rdfs:range :Body .
+
+:createsSense a owl:ObjectProperty ;
+    rdfs:domain :WeightLifting ;
+    rdfs:range :Feeling .

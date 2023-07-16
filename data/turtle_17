@@ -1,0 +1,86 @@
+:Murder a owl:Class .
+
+:Area a owl:Class .
+
+:Man a owl:Class .
+
+:Condition a owl:Class .
+
+:MedicalRecord a owl:Class .
+
+:JackTheRipper a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:HyamHyams a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:Witness a owl:Class .
+
+:Injury a owl:Class .
+
+:Authority a owl:Class .
+
+:Note a owl:Class .
+
+:Woman a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:atCentreOf a owl:ObjectProperty ;
+    rdfs:domain :Area ;
+    rdfs:range :Murder .
+
+:stoppedAt a owl:ObjectProperty ;
+    rdfs:domain :Murder ;
+    rdfs:range :xsd:dateTime .
+
+:worseningAfter a owl:ObjectProperty ;
+    rdfs:domain :Condition ;
+    rdfs:range :Injury .
+
+:discovered a owl:ObjectProperty ;
+    rdfs:domain :MedicalRecord ;
+    rdfs:range :xsd:string .
+
+:canBeIdentifiedAs a owl:ObjectProperty ;
+    rdfs:domain :JackTheRipper ;
+    rdfs:range :HyamHyams .
+
+:hadBeenFullyExploredAs a owl:ObjectProperty ;
+    rdfs:domain :HyamHyams ;
+    rdfs:range :xsd:string .
+
+:couldBe a owl:ObjectProperty ;
+    rdfs:domain :HyamHyams ;
+    rdfs:range :JackTheRipper .
+
+:described a owl:ObjectProperty ;
+    rdfs:domain :Witness ;
+    rdfs:range :Man .
+
+:recorded a owl:ObjectProperty ;
+    rdfs:domain :MedicalRecord ;
+    rdfs:range :Injury .
+
+:leftHimUnableTo a owl:ObjectProperty ;
+    rdfs:domain :Injury ;
+    rdfs:range :xsd:string .
+
+:received a owl:ObjectProperty ;
+    rdfs:domain :Authority ;
+    rdfs:range :Note .
+
+:wereFrom a owl:ObjectProperty ;
+    rdfs:domain :Note ;
+    rdfs:range :JackTheRipper .
+
+:wereKilledInOrNear a owl:ObjectProperty ;
+    rdfs:domain :Woman ;
+    rdfs:range :Area .
+
+:reveal a owl:ObjectProperty ;
+    rdfs:domain :HyamHyams ;
+    rdfs:range :MedicalRecord .
+
+:triggeredHimToKill a owl:ObjectProperty ;
+    rdfs:domain :HyamHyams ;
+    rdfs:range :xsd:string .

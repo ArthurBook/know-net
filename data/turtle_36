@@ -1,0 +1,63 @@
+:Country a owl:Class .
+
+:Canada a :Country .
+
+:AssistedDeath a owl:Class .
+
+:AssistedDeathIn2021 a :AssistedDeath ;
+    rdfs:subClassOf :AssistedDeath .
+
+:CriteriaForMedicallyAssistedDeath a :AssistedDeath ;
+    rdfs:subClassOf :AssistedDeath .
+
+:expanded a owl:ObjectProperty ;
+    rdfs:domain :Country ;
+    rdfs:range :AssistedDeath .
+
+:ProponentsOfAssistedDeath a owl:Class .
+
+:DisabilityRightsAndReligiousAdvocates a owl:Class .
+
+:say a owl:ObjectProperty ;
+    rdfs:domain :ProponentsOfAssistedDeath ;
+    rdfs:range xsd:string .
+
+:toldReuters a owl:ObjectProperty ;
+    rdfs:domain :DisabilityRightsAndReligiousAdvocates ;
+    rdfs:range xsd:string .
+
+:In2021 a owl:Class .
+
+:InNetherlands a owl:Class .
+
+:InBelgium a owl:Class .
+
+:ProvincialAuthorities a owl:Class .
+
+:deemed a owl:ObjectProperty ;
+    rdfs:domain :ProvincialAuthorities ;
+    rdfs:range :AssistedDeath .
+
+:Procedure a owl:Class .
+
+:requires a owl:ObjectProperty ;
+    rdfs:domain :Procedure ;
+    rdfs:range xsd:string .
+
+:LamettiSaidTheFederalGovernment a owl:Class .
+
+:isConsidering a owl:ObjectProperty ;
+    rdfs:domain :LamettiSaidTheFederalGovernment ;
+    rdfs:range xsd:string .
+
+:DyingWithDignityCanada a owl:Class .
+
+:hasOrganized a owl:ObjectProperty ;
+    rdfs:domain :DyingWithDignityCanada ;
+    rdfs:range xsd:string .
+
+:Pauli a owl:Class .
+
+:firstRaised a owl:ObjectProperty ;
+    rdfs:domain :Pauli ;
+    rdfs:range xsd:string .

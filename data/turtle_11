@@ -1,0 +1,71 @@
+:Location a owl:Class .
+
+:Person a owl:Class .
+
+:Committee a owl:Class .
+
+:Legislation a owl:Class .
+
+:Population a owl:Class .
+
+:Community a owl:Class .
+
+:founderOf a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Committee .
+
+:chairpersonOf a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Committee .
+
+:locatedIn a owl:ObjectProperty ;
+    rdfs:domain :Location ;
+    rdfs:range :Location .
+
+:hasPopulation a owl:ObjectProperty ;
+    rdfs:domain :Location ;
+    rdfs:range :Population .
+
+:isCommunityType a owl:ObjectProperty ;
+    rdfs:domain :Location ;
+    rdfs:range :Community .
+
+:isLosing a owl:ObjectProperty ;
+    rdfs:domain :Location ;
+    rdfs:range :Population .
+
+:isConsidering a owl:ObjectProperty ;
+    rdfs:domain :Location ;
+    rdfs:range :Legislation .
+
+:isPuttingCashInto a owl:ObjectProperty ;
+    rdfs:domain :Location ;
+    rdfs:range :Population .
+
+:isAddressing a owl:ObjectProperty ;
+    rdfs:domain :Location ;
+    rdfs:range :Legislation .
+
+:expandedTo a owl:ObjectProperty ;
+    rdfs:domain :Committee ;
+    rdfs:range :Legislation .
+
+:isLegislationType a owl:ObjectProperty ;
+    rdfs:domain :Legislation ;
+    rdfs:range :Legislation .
+
+:isPutInto a owl:ObjectProperty ;
+    rdfs:domain :Legislation ;
+    rdfs:range :Legislation .
+
+:isBroughtTo a owl:ObjectProperty ;
+    rdfs:domain :Legislation ;
+    rdfs:range :Community .
+
+:creates a owl:ObjectProperty ;
+    rdfs:domain :Legislation ;
+    rdfs:range :Community .
+
+:upliftsAndLiberates a owl:ObjectProperty ;
+    rdfs:domain :Legislation ;
+    rdfs:range :Population .

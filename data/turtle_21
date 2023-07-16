@@ -1,0 +1,71 @@
+:Land a owl:Class .
+
+:Counterclaim a owl:Class .
+
+:Lawsuit a owl:Class .
+
+:Structure a owl:Class .
+
+:Developer a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:Wright a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:Graves a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:BaileyPoint a owl:Class ;
+    rdfs:subClassOf :Company .
+
+:denies a owl:ObjectProperty ;
+    rdfs:domain :Developer ;
+    rdfs:range :Land .
+
+:files a owl:ObjectProperty ;
+    rdfs:domain :Wright ;
+    rdfs:range :Counterclaim .
+
+:tells a owl:ObjectProperty ;
+    rdfs:domain :Wright ;
+    rdfs:range :Developer .
+
+:wantsToLiveOn a owl:ObjectProperty ;
+    rdfs:domain :Wright ;
+    rdfs:range :Land .
+
+:filedIn a owl:ObjectProperty ;
+    rdfs:domain :Lawsuit ;
+    rdfs:range :xsd:date .
+
+:filedBy a owl:ObjectProperty ;
+    rdfs:domain :Lawsuit ;
+    rdfs:range :BaileyPoint .
+
+:claims a owl:ObjectProperty ;
+    rdfs:domain :Lawsuit ;
+    rdfs:range :Structure .
+
+:asksForRemovalOf a owl:ObjectProperty ;
+    rdfs:domain :Lawsuit ;
+    rdfs:range :Structure .
+
+:seeksCompensationFor a owl:ObjectProperty ;
+    rdfs:domain :Lawsuit ;
+    rdfs:range :xsd:string .
+
+:hasRemoved a owl:ObjectProperty ;
+    rdfs:domain :Wright ;
+    rdfs:range :Structure .
+
+:preparesToDownsize a owl:ObjectProperty ;
+    rdfs:domain :Wright ;
+    rdfs:range :Structure .
+
+:accuses a owl:ObjectProperty ;
+    rdfs:domain :Counterclaim ;
+    rdfs:range :BaileyPoint .
+
+:trespasses a owl:ObjectProperty ;
+    rdfs:domain :Counterclaim ;
+    rdfs:range :BaileyPoint .

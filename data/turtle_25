@@ -1,0 +1,47 @@
+:TelevisionShow a owl:Class .
+
+:Celebrity a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:Contestant a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:Opinion a owl:Class .
+
+:Clip a owl:Class .
+
+:participatesIn a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :TelevisionShow .
+
+:shares a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Opinion .
+
+:clashesWith a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .
+
+:quits a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :TelevisionShow .
+
+:refersTo a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :TelevisionShow .
+
+:scolds a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .
+
+:airs a owl:ObjectProperty ;
+    rdfs:domain :TelevisionShow ;
+    rdfs:range :Clip .
+
+:hasMultiple a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .
+
+:wantsToGetBackTogetherWith a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .

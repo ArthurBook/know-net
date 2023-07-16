@@ -1,0 +1,65 @@
+:Entity a owl:Class .
+
+:Accusation a owl:Class ;
+    rdfs:subClassOf :Entity .
+
+:Person a owl:Class ;
+    rdfs:subClassOf :Entity .
+
+:Property a owl:Class ;
+    rdfs:subClassOf :Entity .
+
+:Company a owl:Class ;
+    rdfs:subClassOf :Entity .
+
+:Donation a owl:Class ;
+    rdfs:subClassOf :Entity .
+
+:LegalFees a owl:Class ;
+    rdfs:subClassOf :Entity .
+
+:Murder a owl:Class ;
+    rdfs:subClassOf :Entity .
+
+:Disappearance a owl:Class ;
+    rdfs:subClassOf :Entity .
+
+:accuses a owl:ObjectProperty ;
+    rdfs:domain :Accusation ;
+    rdfs:range :Company .
+
+:advocatesFor a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .
+
+:enslavedAlong a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Property .
+
+:garneredAttentionOf a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .
+
+:donatedTo a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Donation .
+
+:createdToRaiseMoneyFor a owl:ObjectProperty ;
+    rdfs:domain :Donation ;
+    rdfs:range :LegalFees .
+
+:sharedStoryOn a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Entity .
+
+:chargedIn a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Murder .
+
+:disappearedOn a owl:ObjectProperty ;
+    rdfs:domain :Disappearance ;
+    rdfs:range :Property .
+
+:between a owl:ObjectProperty ;
+    rdfs:domain :Disappearance ;
+    rdfs:range :xsd:date .

@@ -1,0 +1,103 @@
+:Reparations a owl:Class .
+
+:Community a owl:Class .
+
+:TaxRevenue a owl:Class .
+
+:FederalPolicy a owl:Class .
+
+:LocalCommunity a owl:Class .
+
+:Government a owl:Class .
+
+:CongressionalLeaders a owl:Class .
+
+:BlackFamilies a owl:Class .
+
+:Residents a owl:Class .
+
+:Ancestors a owl:Class .
+
+:HousingDiscrimination a owl:Class .
+
+:ReparationsInitiative a owl:Class .
+
+:Harm a owl:Class .
+
+:Eligibility a owl:Class .
+
+:BlackCommunities a owl:Class .
+
+:Priority a owl:Class .
+
+:RestorativeHousingProgram a owl:Class .
+
+:RealEstateTransferTaxes a owl:Class .
+
+:Benefits a owl:Class .
+
+:Descendants a owl:Class .
+
+:repairs a owl:ObjectProperty ;
+    rdfs:domain :Reparations ;
+    rdfs:range :Community .
+
+:creates a owl:ObjectProperty ;
+    rdfs:domain :Reparations ;
+    rdfs:range :TaxRevenue .
+
+:isImplementedWith a owl:ObjectProperty ;
+    rdfs:domain :FederalPolicy ;
+    rdfs:range :LocalCommunity .
+
+:isLookedAt a owl:ObjectProperty ;
+    rdfs:domain :Government ;
+    rdfs:range :Government .
+
+:tricklesUpTo a owl:ObjectProperty ;
+    rdfs:domain :Government ;
+    rdfs:range :CongressionalLeaders .
+
+:areLosing a owl:ObjectProperty ;
+    rdfs:domain :BlackFamilies ;
+    rdfs:range :Residents .
+
+:areReceiving a owl:ObjectProperty ;
+    rdfs:domain :Residents ;
+    rdfs:range :Reparations .
+
+:areDescribedAs a owl:ObjectProperty ;
+    rdfs:domain :Residents ;
+    rdfs:range :Ancestors .
+
+:wereVictimsOf a owl:ObjectProperty ;
+    rdfs:domain :Residents ;
+    rdfs:range :HousingDiscrimination .
+
+:isStartedFrom a owl:ObjectProperty ;
+    rdfs:domain :ReparationsInitiative ;
+    rdfs:range :Reparations .
+
+:isSeparatedTo a owl:ObjectProperty ;
+    rdfs:domain :Harm ;
+    rdfs:range :Eligibility .
+
+:decidesThat a owl:ObjectProperty ;
+    rdfs:domain :BlackCommunities ;
+    rdfs:range :Priority .
+
+:isFundedFrom a owl:ObjectProperty ;
+    rdfs:domain :RestorativeHousingProgram ;
+    rdfs:range :RealEstateTransferTaxes .
+
+:isAddedTo a owl:ObjectProperty ;
+    rdfs:domain :RealEstateTransferTaxes ;
+    rdfs:range :Reparations .
+
+:areTransferableTo a owl:ObjectProperty ;
+    rdfs:domain :Benefits ;
+    rdfs:range :Descendants .
+
+:areAfricanAmericanOrBlack a owl:ObjectProperty ;
+    rdfs:domain :Ancestors ;
+    rdfs:range :Ancestors .

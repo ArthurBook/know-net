@@ -1,0 +1,62 @@
+:Police a owl:Class .
+
+:Asylum a owl:Class .
+
+:Person a owl:Class .
+
+:PoliceSergeant a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:PoliceStation a owl:Class .
+
+:wasPickedUpBy a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Police .
+
+:wasIncarceratedIn a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Asylum .
+
+:hadBeenOn a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :xsd:string .
+
+:coincidedWith a owl:ObjectProperty ;
+    rdfs:domain :xsd:string ;
+    rdfs:range :xsd:string .
+
+:escalatingBetween a owl:ObjectProperty ;
+    rdfs:domain :xsd:string ;
+    rdfs:range :xsd:string .
+
+:matched a owl:ObjectProperty ;
+    rdfs:domain :xsd:string ;
+    rdfs:range :xsd:string .
+
+:said a owl:ObjectProperty ;
+    rdfs:domain :xsd:string ;
+    rdfs:range :xsd:string .
+
+:wereSimilarTo a owl:ObjectProperty ;
+    rdfs:domain :xsd:string ;
+    rdfs:range :xsd:string .
+
+:painted a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :xsd:string .
+
+:wereClosedTo a owl:ObjectProperty ;
+    rdfs:domain :xsd:string ;
+    rdfs:range :xsd:string .
+
+:wasPromptedBy a owl:ObjectProperty ;
+    rdfs:domain :xsd:string ;
+    rdfs:range :xsd:string .
+
+:hadBeen a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :PoliceSergeant .
+
+:hadBeenPosted a owl:ObjectProperty ;
+    rdfs:domain :PoliceSergeant ;
+    rdfs:range :PoliceStation .

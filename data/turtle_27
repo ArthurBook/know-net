@@ -1,0 +1,58 @@
+:Celebrity a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:Politician a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:NewsHost a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:FanGroup a owl:Class ;
+
+:Comment a owl:Class .
+
+:Lawsuit a owl:Class .
+
+:said a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Comment .
+
+:responded a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Comment .
+
+:filed a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Lawsuit .
+
+:added a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Comment .
+
+:wrote a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Comment .
+
+:blasted a owl:ObjectProperty ;
+    rdfs:domain :FanGroup ;
+    rdfs:range :Comment .
+
+:clashedWith a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .
+
+:told a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .
+
+:wasSurprised a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Person .
+
+:didntFocus a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Comment .
+
+:focused a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Comment .

@@ -1,0 +1,39 @@
+:City a owl:Class .
+
+:Employer a owl:Class .
+
+:PetOwner a owl:Class .
+
+:Animal a owl:Class .
+
+:Country a owl:Class .
+
+:LasVegas a :City .
+
+:Evanston a :City .
+
+:UnitedStates a :Country .
+
+:isWarnedBy a owl:ObjectProperty ;
+    rdfs:domain :City ;
+    rdfs:range :Employer .
+
+:isWarnedBy a owl:ObjectProperty ;
+    rdfs:domain :City ;
+    rdfs:range :PetOwner .
+
+:isUrgedToKeepAnimals a owl:ObjectProperty ;
+    rdfs:domain :City ;
+    rdfs:range :Animal .
+
+:isTheFirstCityIn a owl:ObjectProperty ;
+    rdfs:domain :City ;
+    rdfs:range :Country .
+
+:LasVegas :isWarnedBy :Employer .
+
+:LasVegas :isWarnedBy :PetOwner .
+
+:LasVegas :isUrgedToKeepAnimals :Animal .
+
+:Evanston :isTheFirstCityIn :UnitedStates .

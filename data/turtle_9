@@ -1,0 +1,39 @@
+:City a owl:Class .
+
+:State a owl:Class .
+
+:Temperature a owl:Class .
+
+:Meteorologist a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:WeatherService a owl:Class .
+
+:HealthOfficial a owl:Class ;
+    rdfs:subClassOf :Person .
+
+:HealthDistrict a owl:Class .
+
+:forecastWorsening a owl:ObjectProperty ;
+    rdfs:domain :City ;
+    rdfs:range :State .
+
+:forecastWorseningTemperature a owl:ObjectProperty ;
+    rdfs:domain :City ;
+    rdfs:range :Temperature .
+
+:warnedBy a owl:ObjectProperty ;
+    rdfs:domain :City ;
+    rdfs:range :Meteorologist .
+
+:warnedByService a owl:ObjectProperty ;
+    rdfs:domain :City ;
+    rdfs:range :WeatherService .
+
+:warnedByHealthOfficial a owl:ObjectProperty ;
+    rdfs:domain :City ;
+    rdfs:range :HealthOfficial .
+
+:warnedByHealthDistrict a owl:ObjectProperty ;
+    rdfs:domain :City ;
+    rdfs:range :HealthDistrict .
