@@ -166,3 +166,4 @@ cython_debug/
 .vscode
 .chroma_cache
 .pickled_builders
+.DS_Store
