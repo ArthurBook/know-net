@@ -9,6 +9,7 @@ from know_net.graphqa import VecGraphQAChain
 
 # Path to the .env file
 env_file = ".env"
+PICKLED_BUILDER_PATH = ".pickled_builders/builder.pkl"
 
 # Read the .env file and set environment variables
 with open(env_file, "r") as file:
@@ -36,7 +37,7 @@ if "messages" not in st.session_state:
 #     with st.chat_message(message["role"]):
 #         st.markdown(message["content"])
 
-with open("builder2.pkl", "rb") as f:
+with open(PICKLED_BUILDER_PATH, "rb") as f:
     client = pickle.load(f)
 client: LLMGraphBuilder
 llm = ChatOpenAI(temperature=0)  # type: ignore
@@ -50,6 +51,7 @@ if prompt := st.chat_input("Start chat"):
 
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
+        source_placeholder = st.empty()
         full_response = ""
         try:
             last_message = st.session_state.messages[-1]
@@ -58,7 +60,12 @@ if prompt := st.chat_input("Start chat"):
 
         response = qa._call({"query": last_message})
         full_response += response["result"]
-        full_response += "Sources:" + response["references"]
-        message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)
+
+        references = response["references"]
+        if references:
+            source_placeholder.write("Sources:")
+            for ref in references.splitlines():
+                source_placeholder.write(ref)
+
     # st.session_state.messages.append({"role": "assistant", "content": full_response})

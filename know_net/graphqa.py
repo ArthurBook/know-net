@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 from typing import Any, Dict, List, NamedTuple, Optional
 
+import loguru
 from langchain.callbacks.manager import CallbackManagerForChainRun
 from langchain.chains.base import Chain
 from langchain.chains.graph_qa.prompts import ENTITY_EXTRACTION_PROMPT, GRAPH_QA_PROMPT
@@ -15,6 +16,8 @@ from typing_extensions import Self
 
 from know_net import graph_building
 from know_net.graph_building import Entity, LLMGraphBuilder
+
+logger = loguru.logger
 
 
 class VecGraphQAChain(Chain):
@@ -108,10 +111,11 @@ def get_entity_knowledge(
     results = graph.vectorstore.similarity_search_with_relevance_scores(entity_str)
     for doc, score in results:
         entity = graph.doc_to_entity[doc.page_content]
-        print("entity:", entity)
+        logger.info("entity:{}", entity)
         trip_str = str(get_entity_triples(graph.graph, entity))
         references = graph.graph.nodes[entity][graph_building.SOURCE_ATTR]
-        print("trip str:", trip_str)
+        logger.info("trip str: {}", trip_str)
+        logger.info("urls: {}", set(references))
         triplets.append(EntityKnowledge(triplet_string=trip_str, references=references))
     return triplets
 

@@ -7,7 +7,10 @@ from langchain import FAISS
 import networkx as nx
 from langchain.docstore.document import Document
 from langchain.embeddings import base as embeddings_base
-from langchain.embeddings import openai as openai_embeddings
+from langchain.embeddings import (
+    openai as openai_embeddings,
+    huggingface as huggingface_embeddings,
+)
 from langchain.graphs.networkx_graph import NetworkxEntityGraph
 from langchain.indexes import GraphIndexCreator
 from langchain.llms import base as llm_base
@@ -29,7 +32,7 @@ TRIPLES_CACHE_PATH = ".triples_cache/%s"
 CHROMA_PERSISTENT_DISK_DIR = ".chroma_cache/%s"
 
 DEFAULT_LLM = openai.OpenAIChat()  # type: ignore
-DEFAULT_EMBEDDER = openai_embeddings.OpenAIEmbeddings()  # type: ignore
+DEFAULT_EMBEDDER = huggingface_embeddings.HuggingFaceEmbeddings()  # type: ignore
 
 SOURCE_ATTR = "sources"
 
