@@ -4,6 +4,8 @@ from urllib import parse
 
 import bs4
 
+DEFAULT_MAX_LINKS = 5  # if None, then no cap
+
 
 class HyperLinkFinder(abc.ABC):
     """
@@ -11,7 +13,7 @@ class HyperLinkFinder(abc.ABC):
     """
 
     def __init__(self, max_links: Optional[int] = None) -> None:
-        self.max_links = max_links
+        self.max_links = max_links or DEFAULT_MAX_LINKS
 
     def get_links_from_html(self, html: str, base_url: str) -> Iterator[str]:
         soup = bs4.BeautifulSoup(html, "html.parser")

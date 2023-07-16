@@ -30,14 +30,14 @@ class NewsCrawler(base.ContentRetriever):
         self.hyperlink_finder = link_finder or DEFAULT_CONTENT_FILTER
         self.content_parser = content_parser or DEFAULT_CONTENT_PARSER
         self.max_retries = max_retries or MAX_RETRIES
-        self.queue: asyncio.Queue[str] = asyncio.Queue()
+        self.queue: asyncio.Queue[base.Content] = asyncio.Queue()
         logger.info("initialized {}", self.__class__.__name__)
 
-    def __iter__(self) -> Iterator[str]:
+    def __iter__(self) -> Iterator[base.Content]:
         """
         Synchronous iterator over loaded articles
         """
-        loaded_articles: List[str] = list()
+        loaded_articles: List[base.Content] = list()
 
         async def load_sync():
             nonlocal loaded_articles
@@ -53,7 +53,7 @@ class NewsCrawler(base.ContentRetriever):
         asyncio.create_task(self.load())
         return self
 
-    async def __anext__(self) -> str:
+    async def __anext__(self) -> base.Content:
         while True:
             try:
                 content_piece = self.queue.get_nowait()
@@ -69,7 +69,7 @@ class NewsCrawler(base.ContentRetriever):
 
     async def _load_frontpage_articles(
         self, url: str
-    ) -> AsyncGenerator[Optional[str], None]:
+    ) -> AsyncGenerator[Optional[base.Content], None]:
         async with self._semaphore:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
@@ -82,7 +82,7 @@ class NewsCrawler(base.ContentRetriever):
                     for result in asyncio.as_completed(tasks):
                         yield await result
 
-    async def _load_article(self, url: str) -> Optional[str]:
+    async def _load_article(self, url: str) -> Optional[base.Content]:
         async with self._semaphore:
             for attempt in range(1, self.max_retries + 1):
                 async with aiohttp.ClientSession() as session:
@@ -92,7 +92,7 @@ class NewsCrawler(base.ContentRetriever):
                             text = await response.text()
                             parsed_text = self.content_parser.parse(text)
                             logger.debug(f"Retrieved {url}")
-                            return parsed_text
+                            return base.Content(text=parsed_text, url=url)
                     except aiohttp.ClientResponseError:
                         logger.debug(f"Request to {url} failed on attempt {attempt}")
                         await asyncio.sleep(2**attempt)  # exponential backoff

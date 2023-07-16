@@ -53,8 +53,9 @@ if prompt := st.chat_input("Start chat"):
         except IndexError:
             last_message = None
 
-        response = qa.run(last_message)
-        full_response += response
+        response = qa._call({"query": last_message})
+        full_response += response["result"]
+        full_response += "Sources:" + response["references"]
         message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)
     # st.session_state.messages.append({"role": "assistant", "content": full_response})
