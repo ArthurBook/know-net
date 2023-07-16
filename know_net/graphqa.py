@@ -119,7 +119,7 @@ def get_entity_triples(graph: nx.Graph, entity: str, depth: int = 1) -> List[str
         return []
 
     results = []
-    for src, sink in nx.dfs_edges(graph, entity, depth_limit=2):
+    for src, sink in nx.dfs_edges(graph, entity, depth_limit=depth):
         relation = graph[src][sink]["label"]
         results.append(f"({src.name}, {relation}, {sink.name})")
     return results
