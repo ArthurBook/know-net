@@ -32,7 +32,7 @@ TRIPLES_CACHE_PATH = ".triples_cache/%s"
 CHROMA_PERSISTENT_DISK_DIR = ".chroma_cache/%s"
 
 DEFAULT_LLM = openai.OpenAIChat()  # type: ignore
-DEFAULT_EMBEDDER = huggingface_embeddings.HuggingFaceEmbeddings()  # type: ignore
+DEFAULT_EMBEDDER = openai_embeddings.OpenAIEmbeddings()  # type: ignore
 
 SOURCE_ATTR = "sources"
 
