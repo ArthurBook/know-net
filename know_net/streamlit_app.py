@@ -34,7 +34,7 @@ if "messages" not in st.session_state:
 #     with st.chat_message(message["role"]):
 #         st.markdown(message["content"])
 
-with open("builder2.pkl", "rb") as f:
+with open("builder3.pkl", "rb") as f:
     client = pickle.load(f)
 client: LLMGraphBuilder
 qa = VecGraphQAChain.from_llm(ChatOpenAI(temperature=0), graph=client, verbose=True)
@@ -57,4 +57,3 @@ if prompt := st.chat_input("Start chat"):
         full_response += response
         message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)
-    # st.session_state.messages.append({"role": "assistant", "content": full_response})
