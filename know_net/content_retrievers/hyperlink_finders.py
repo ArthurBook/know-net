@@ -4,7 +4,7 @@ from urllib import parse
 
 import bs4
 
-DEFAULT_MAX_LINKS = 5  # if None, then no cap
+DEFAULT_MAX_LINKS = 3  # if None, then no cap
 
 
 class HyperLinkFinder(abc.ABC):

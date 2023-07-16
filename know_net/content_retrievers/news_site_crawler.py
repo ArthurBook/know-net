@@ -6,9 +6,9 @@ import aiohttp
 from typing_extensions import Annotated
 
 from know_net import base
-from know_net.content_retrievers import content_filters, content_parsers
+from know_net.content_retrievers import content_parsers, hyperlink_finders
 
-DEFAULT_CONTENT_FILTER = content_filters.SimpleHeuristicFilter(3, 30)
+DEFAULT_CONTENT_FILTER = hyperlink_finders.SimpleHeuristicFilter(3, 30)
 DEFAULT_CONTENT_PARSER = content_parsers.YahooFinanceParser()
 MAX_CONCURRENCY = 20
 MAX_RETRIES = 3
@@ -22,7 +22,7 @@ class NewsCrawler(base.ContentRetriever):
     def __init__(
         self,
         url: Annotated[str, "Link the news frontpage that you want to crawl"],
-        link_finder: Optional[content_filters.HyperLinkFinder] = None,
+        link_finder: Optional[hyperlink_finders.HyperLinkFinder] = None,
         content_parser: Optional[content_parsers.ContentParser] = None,
         max_retries: Optional[int] = None,
     ) -> None:
