@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
     builder = graph_building.LLMGraphBuilder()
     scraper = news_site_crawler.NewsCrawler(test_url)
-    news = list(scraper)[:2]
+    news = list(scraper)
 
     builder.add_content_batch(news)
 
@@ -16,5 +16,5 @@ if __name__ == "__main__":
 
     import pickle
 
-    with open("builder.pkl", "wb") as f:
+    with open("builder3.pkl", "wb") as f:
         pickle.dump(builder, f)

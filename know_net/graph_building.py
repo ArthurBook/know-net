@@ -87,8 +87,12 @@ class LLMGraphBuilder(GraphBuilder):
 
     async def add_to_cache_async(self, text: str) -> None:
         async with self._semaphore:
-            entity_graph = await self.index_creator.afrom_text(text)
-            self.llm_cache[text] = entity_graph
+            try:
+                entity_graph = await self.index_creator.afrom_text(text)
+                self.llm_cache[text] = entity_graph
+            except:
+                entity_graph = await self.index_creator.afrom_text(text[: 4000 * 3])
+                self.llm_cache[text] = entity_graph
 
     def add_content(self, content: str) -> None:
         if self.is_in_cache(content):
@@ -108,7 +112,7 @@ class LLMGraphBuilder(GraphBuilder):
     def normalize_graph_triples(self, graph: NetworkxEntityGraph) -> Iterator[KGTriple]:
         return itertools.starmap(self._normalize_triple, graph.get_triples())
 
-    def _normalize_triple(self, subject: str, predicate: str, object_: str) -> KGTriple:
+    def _normalize_triple(self, subject: str, object_: str, predicate: str) -> KGTriple:
         s = self.vectorstore.similarity_search_with_relevance_scores(subject, k=1)
         o = self.vectorstore.similarity_search_with_relevance_scores(object_, k=1)
         if len(s) and s[0][1] > self.match_threshold:
@@ -150,3 +154,6 @@ class LLMGraphBuilder(GraphBuilder):
 
     def search(self, q: str):
         return self.vectorstore.similarity_search(q)
+
+
+from langchain.indexes import GraphIndexCreator

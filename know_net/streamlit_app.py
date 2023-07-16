@@ -1,7 +1,9 @@
 import streamlit as st
+from langchain.chat_models import ChatOpenAI
 import pickle
 from know_net.graph_building import LLMGraphBuilder
 import os
+from know_net.graphqa import VecGraphQAChain
 
 # Path to the .env file
 env_file = ".env"
@@ -28,13 +30,15 @@ if st.button("Clear Chat"):
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
 
-for message in st.session_state["messages"]:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# for message in st.session_state["messages"]:
+#     with st.chat_message(message["role"]):
+#         st.markdown(message["content"])
 
-with open("builder.pkl", "rb") as f:
+with open("builder2.pkl", "rb") as f:
     client = pickle.load(f)
 client: LLMGraphBuilder
+qa = VecGraphQAChain.from_llm(ChatOpenAI(temperature=0), graph=client, verbose=True)
+
 
 if prompt := st.chat_input("Start chat"):
     st.session_state.messages.append(prompt)
@@ -49,8 +53,8 @@ if prompt := st.chat_input("Start chat"):
         except IndexError:
             last_message = None
 
-        response = str(client.search(last_message))
+        response = qa.run(last_message)
         full_response += response
         message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
+    # st.session_state.messages.append({"role": "assistant", "content": full_response})
