@@ -51,6 +51,7 @@ if prompt := st.chat_input("Start chat"):
 
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
+        source_header = st.empty()
         source_placeholder = st.empty()
         full_response = ""
         try:
@@ -64,8 +65,7 @@ if prompt := st.chat_input("Start chat"):
 
         references = response["references"]
         if references:
-            source_placeholder.write("Sources:")
-            for ref in references.splitlines():
-                source_placeholder.write(ref)
+            source_header.markdown("Sources:")
+            source_placeholder.markdown(references)
 
     # st.session_state.messages.append({"role": "assistant", "content": full_response})
