@@ -1,35 +1,40 @@
 import asyncio
-import functools
 import itertools
-from typing import (
-    Dict,
-    Generator,
-    Iterable,
-    Iterator,
-    List,
-    NamedTuple,
-    Optional,
-    Tuple,
-    cast,
-)
+from typing import Dict, Iterable, Iterator, List, NamedTuple, Optional, cast
 
 import diskcache
+from langchain import FAISS
 import networkx as nx
 from langchain.docstore.document import Document
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings import base as embeddings_base
+from langchain.embeddings import (
+    openai as openai_embeddings,
+    huggingface as huggingface_embeddings,
+)
 from langchain.graphs.networkx_graph import NetworkxEntityGraph
 from langchain.indexes import GraphIndexCreator
-from langchain.llms import HuggingFaceTextGenInference
-from langchain.vectorstores import Chroma, FAISS
+from langchain.llms import base as llm_base
+from langchain.llms import huggingface_text_gen_inference, openai
+from langchain.vectorstores import Chroma
 from loguru import logger
+from openai import InvalidRequestError
 from pydantic import BaseModel
+from know_net import base
 
 from know_net.base import GraphBuilder
 
-
-MAX_CONCURRENCY = 100
 logger = logger.opt(ansi=True)
+
+MAX_LLM_CONCURRENCY = 100
+MAX_EMBEDDER_CONCURRENCY = 100
+DEFAULT_MATCH_THRESHOLD = 0.95
+TRIPLES_CACHE_PATH = ".triples_cache/%s"
+CHROMA_PERSISTENT_DISK_DIR = ".chroma_cache/%s"
+
+DEFAULT_LLM = openai.OpenAIChat()  # type: ignore
+DEFAULT_EMBEDDER = huggingface_embeddings.HuggingFaceEmbeddings()  # type: ignore
+
+SOURCE_ATTR = "sources"
 
 
 class Entity(BaseModel):
@@ -44,66 +49,88 @@ class KGTriple(NamedTuple):
     subject: Entity
     predicate: str
     object_: Entity
+    url: str
 
 
 RootEntity = Entity(name="root", is_a=None)
 
 
-class LLMGraphBuilder(GraphBuilder):
-    _semaphore = asyncio.Semaphore(MAX_CONCURRENCY)
+class ContentGraph(NamedTuple):
+    url: str
+    graph: NetworkxEntityGraph
 
-    def __init__(self) -> None:
+
+class LLMGraphBuilder(GraphBuilder):
+    _llm_semaphore = asyncio.Semaphore(MAX_LLM_CONCURRENCY)
+    _embedder_semaphore = asyncio.Semaphore(MAX_EMBEDDER_CONCURRENCY)
+
+    def __init__(
+        self,
+        llm: Optional[llm_base.BaseLLM] = None,
+        embedding_model: Optional[embeddings_base.Embeddings] = None,
+        match_treshold: Optional[float] = None,
+    ) -> None:
         super().__init__()
-        llm = ChatOpenAI(temperature=0)
-        self.index_creator = GraphIndexCreator(llm=llm)
-        self.triples: List[KGTriple] = []
-        self.embeddings = OpenAIEmbeddings()  # type: ignore
-        self.vectorstore = FAISS.from_texts(["root"], self.embeddings)
-        self.match_threshold = 0.95
+        self.llm = llm or DEFAULT_LLM
+        self.embeddings = embedding_model or DEFAULT_EMBEDDER
+        self.match_threshold = match_treshold or DEFAULT_MATCH_THRESHOLD
+        self.index_creator = GraphIndexCreator(llm=self.llm)
+        self.vectorstore = get_faiss_vectorstore(self.embeddings)
+        self.llm_cache = get_cache_triples_cache(self.llm)
         self.doc_to_entity: Dict[str, Entity] = {}
-        self.llm_cache = diskcache.Cache(".triples_cache")
+        self.triples: List[KGTriple] = []
+
         logger.info("Initialized LLMGraphBuilder")
 
-    def add_content_batch(self, contents: Iterable[str]) -> None:
+    def add_content_batch(self, contents: Iterable[base.Content]) -> None:
         contents = list(contents)  # in case of generator
-        asyncio.run(self.add_missing_contents_to_cache(contents))
-        graphs = [cast(NetworkxEntityGraph, self.llm_cache[t]) for t in contents]
+        asyncio.run(self.update_llm_cache_async(c.text for c in contents))
+        graphs = [
+            ContentGraph(
+                url=c.url,
+                graph=cast(NetworkxEntityGraph, self.llm_cache[c.text]),
+            )
+            for c in contents
+        ]
         normalized_graph_triples = map(self.normalize_graph_triples, graphs)
         self.triples.extend(itertools.chain.from_iterable(normalized_graph_triples))
 
-    async def add_missing_contents_to_cache(self, contents: Iterable[str]) -> None:
-        missing_from_cache = itertools.filterfalse(self.is_in_cache, contents)
-        tasks = [self.add_to_cache_async(t) for t in missing_from_cache]
+    def add_content(self, content: base.Content) -> None:
+        if self.is_in_llm_cache(content.text):
+            content_graph = cast(ContentGraph, self.llm_cache[content])
+        else:
+            url = content.url
+            graph = self.index_creator.from_text(content.text)
+            self.llm_cache[content] = content_graph = ContentGraph(url=url, graph=graph)
+        self.triples.extend(self.normalize_graph_triples(content_graph))
+
+    ## Updating LLM cache
+    async def update_llm_cache_async(self, contents: Iterable[str]) -> None:
+        missing_from_cache = itertools.filterfalse(self.is_in_llm_cache, contents)
+        tasks = [self.add_to_item_cache_async(t) for t in missing_from_cache]
         await asyncio.gather(*tasks)
 
-    async def add_to_cache_async(self, text: str) -> None:
-        async with self._semaphore:
+    async def add_to_item_cache_async(self, text: str) -> None:
+        async with self._llm_semaphore:
             try:
                 entity_graph = await self.index_creator.afrom_text(text)
-                self.llm_cache[text] = entity_graph
-            except:
-                entity_graph = await self.index_creator.afrom_text(text[: 4000 * 3])
-                self.llm_cache[text] = entity_graph
+            except InvalidRequestError as e:  # TODO pretty hacky
+                logger.exception(e)
+                entity_graph = await self.index_creator.afrom_text(text[:12000])
 
-    def add_content(self, content: str) -> None:
-        if self.is_in_cache(content):
-            graph = cast(NetworkxEntityGraph, self.llm_cache[content])
-        else:
-            self.llm_cache[content] = graph = self.index_creator.from_text(content)
-        self.triples.extend(self.normalize_graph_triples(graph))
+            self.llm_cache[text] = entity_graph
 
-    def is_in_cache(self, text: str) -> bool:
-        hit = text in self.llm_cache
-        if hit:
-            logger.debug("cache <green>hit</green> for content: {}", text[:18])
-        else:
-            logger.debug("cache <red>miss</red> for content: {}", text[:18])
-        return hit
+    ## Normalizing triples
+    def normalize_graph_triples(self, graph: ContentGraph) -> List[KGTriple]:
+        normalized_triplets: List[KGTriple] = list()
+        for subject, object_, predicate in graph.graph.get_triples():
+            triplet = self._normalize_triple(subject, object_, predicate, graph.url)
+            normalized_triplets.append(triplet)
+        return normalized_triplets
 
-    def normalize_graph_triples(self, graph: NetworkxEntityGraph) -> Iterator[KGTriple]:
-        return itertools.starmap(self._normalize_triple, graph.get_triples())
-
-    def _normalize_triple(self, subject: str, object_: str, predicate: str) -> KGTriple:
+    def _normalize_triple(
+        self, subject: str, object_: str, predicate: str, url: str
+    ) -> KGTriple:
         s = self.vectorstore.similarity_search_with_relevance_scores(subject, k=1)
         o = self.vectorstore.similarity_search_with_relevance_scores(object_, k=1)
         if len(s) and s[0][1] > self.match_threshold:
@@ -126,7 +153,7 @@ class LLMGraphBuilder(GraphBuilder):
             o_doc = Document(page_content=object_)
             self.vectorstore.add_documents([o_doc])
             self.doc_to_entity[o_doc.page_content] = o_entity
-        return KGTriple(s_entity, predicate, o_entity)
+        return KGTriple(s_entity, predicate, o_entity, url)
 
     @property
     def graph(self) -> nx.Graph:
@@ -139,6 +166,11 @@ class LLMGraphBuilder(GraphBuilder):
                 graph.add_node(subject)
                 graph.add_node(object_)
                 graph.add_edge(subject, object_, label=predicate)
+
+                add_source_metadata(graph.nodes[subject], triple.url)
+                add_source_metadata(graph.nodes[object_], triple.url)
+                add_source_metadata(graph.edges[subject, object_], triple.url)
+
             return graph
 
         return convert_to_graph(self.triples)
@@ -146,5 +178,49 @@ class LLMGraphBuilder(GraphBuilder):
     def search(self, q: str):
         return self.vectorstore.similarity_search(q)
 
+    def is_in_llm_cache(self, text: str) -> bool:
+        hit = text in self.llm_cache
+        if hit:
+            logger.debug("cache <green>hit</green> for content: {}", text[:18])
+        else:
+            logger.debug("cache <red>miss</red> for content: {}", text[:18])
+        return hit
 
-from langchain.indexes import GraphIndexCreator
+
+def add_source_metadata(node_or_edge_dict: Dict, source: str) -> None:
+    node_or_edge_dict[SOURCE_ATTR] = node_or_edge_dict.get(SOURCE_ATTR, [])
+    node_or_edge_dict[SOURCE_ATTR].append(source)
+
+
+def get_faiss_vectorstore(embedder: embeddings_base.Embeddings) -> FAISS:
+    if isinstance(embedder, openai_embeddings.OpenAIEmbeddings):
+        name = embedder.model
+    else:
+        name = embedder.__class__.__name__
+        logger.warning("Unknown llm type: {}", name)
+    return FAISS.from_texts(["root"], embedding=embedder)  # type: ignore
+
+
+def get_chroma_vectorstore(embedder: embeddings_base.Embeddings) -> Chroma:
+    if isinstance(embedder, openai_embeddings.OpenAIEmbeddings):
+        name = embedder.model
+    else:
+        name = embedder.__class__.__name__
+        logger.warning("Unknown llm type: {}", name)
+    return Chroma(
+        embedding_function=embedder,
+        persist_directory=CHROMA_PERSISTENT_DISK_DIR % name,
+    )
+
+
+def get_cache_triples_cache(
+    llm: llm_base.BaseLLM,
+) -> diskcache.Cache:
+    if isinstance(llm, openai.OpenAIChat):
+        name = llm.model_name
+    elif isinstance(llm, huggingface_text_gen_inference.HuggingFaceTextGenInference):
+        name = "huggingface_TGI_server"
+    else:
+        name = llm.__class__.__name__
+        logger.warning("Unknown llm type: {}", name)
+    return diskcache.Cache(TRIPLES_CACHE_PATH % name)

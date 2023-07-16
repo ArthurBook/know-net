@@ -12,9 +12,9 @@ if __name__ == "__main__":
 
     print(builder.graph)
     print(builder.triples)
-    print(builder.search("hypoxaemia"))
+    print(builder.search("elon"))
 
     import pickle
 
-    with open("builder4.pkl", "wb") as f:
+    with open(".pickled_builders/builder.pkl", "wb") as f:
         pickle.dump(builder, f)

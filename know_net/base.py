@@ -1,11 +1,16 @@
 import abc
-from typing import Iterable, Iterator
+from typing import Iterable, Iterator, NamedTuple
 import networkx as nx
+
+
+class Content(NamedTuple):
+    text: str
+    url: str
 
 
 class ContentRetriever(abc.ABC):
     @abc.abstractmethod
-    def __iter__(self) -> Iterator[str]:
+    def __iter__(self) -> Iterator[Content]:
         ...
 
 
