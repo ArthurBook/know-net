@@ -54,15 +54,6 @@ class LLMGraphBuilder(GraphBuilder):
 
     def __init__(self) -> None:
         super().__init__()
-        # llm = HuggingFaceTextGenInference(
-        #     inference_server_url="http://100.79.46.78:8081",
-        #     verbose=True,
-        #     max_new_tokens=512,
-        #     top_k=10,
-        #     top_p=0.95,
-        #     typical_p=0.95,
-        #     temperature=0.01,
-        # )  # type: ignore
         llm = ChatOpenAI(temperature=0)
         self.index_creator = GraphIndexCreator(llm=llm)
         self.triples: List[KGTriple] = []
