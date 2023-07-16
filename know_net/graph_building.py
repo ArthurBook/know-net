@@ -2,6 +2,7 @@ import asyncio
 import functools
 import itertools
 from typing import (
+    Coroutine,
     Dict,
     Generator,
     Iterable,
@@ -15,20 +16,29 @@ from typing import (
 
 import diskcache
 import networkx as nx
+from langchain.embeddings import base as embeddings_base, openai as openai_embeddings
 from langchain.docstore.document import Document
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.graphs.networkx_graph import NetworkxEntityGraph
 from langchain.indexes import GraphIndexCreator
-from langchain.llms import HuggingFaceTextGenInference
+from langchain.llms import base as llm_base
+from langchain.llms import huggingface_text_gen_inference, openai
 from langchain.vectorstores import Chroma
 from loguru import logger
+from openai import InvalidRequestError
 from pydantic import BaseModel
 
 from know_net.base import GraphBuilder
 
-
-MAX_CONCURRENCY = 100
 logger = logger.opt(ansi=True)
+
+MAX_LLM_CONCURRENCY = 100
+MAX_EMBEDDER_CONCURRENCY = 100
+DEFAULT_MATCH_THRESHOLD = 0.95
+TRIPLES_CACHE_PATH = ".triples_cache/%s"
+CHROMA_PERSISTENT_DISK_DIR = ".chroma_cache/%s"
+
+DEFAULT_LLM = openai.OpenAIChat()  # type: ignore
+DEFAULT_EMBEDDER = openai_embeddings.OpenAIEmbeddings()  # type: ignore
 
 
 class Entity(BaseModel):
@@ -49,64 +59,66 @@ RootEntity = Entity(name="root", is_a=None)
 
 
 class LLMGraphBuilder(GraphBuilder):
-    _semaphore = asyncio.Semaphore(MAX_CONCURRENCY)
+    _llm_semaphore = asyncio.Semaphore(MAX_LLM_CONCURRENCY)
+    _embedder_semaphore = asyncio.Semaphore(MAX_EMBEDDER_CONCURRENCY)
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        llm: Optional[llm_base.BaseLLM] = None,
+        embedding_model: Optional[embeddings_base.Embeddings] = None,
+        match_treshold: Optional[float] = None,
+    ) -> None:
         super().__init__()
-        llm = HuggingFaceTextGenInference(
-            inference_server_url="http://100.79.46.78:8081",
-            verbose=True,
-            max_new_tokens=512,
-            top_k=10,
-            top_p=0.95,
-            typical_p=0.95,
-            temperature=0.01,
-        )  # type: ignore
-        self.index_creator = GraphIndexCreator(llm=llm)
-        self.triples: List[KGTriple] = []
-        self.embeddings = OpenAIEmbeddings()  # type: ignore
-        self.vectorstore = Chroma.from_documents([], self.embeddings)
-        self.match_threshold = 0.95
+
+        self.llm = llm or DEFAULT_LLM
+        self.embeddings = embedding_model or DEFAULT_EMBEDDER
+        self.match_threshold = match_treshold or DEFAULT_MATCH_THRESHOLD
+
+        self.index_creator = GraphIndexCreator(llm=self.llm)
+
+        self.vectorstore = get_chroma_vectorstore(self.embeddings)
+        self.llm_cache = get_cache_triples_cache(self.llm)
+
         self.doc_to_entity: Dict[str, Entity] = {}
-        self.llm_cache = diskcache.Cache(".triples_cache")
+        self.triples: List[KGTriple] = []
+
         logger.info("Initialized LLMGraphBuilder")
 
     def add_content_batch(self, contents: Iterable[str]) -> None:
         contents = list(contents)  # in case of generator
-        asyncio.run(self.add_missing_contents_to_cache(contents))
+        asyncio.run(self.update_llm_cache_async(contents))
         graphs = [cast(NetworkxEntityGraph, self.llm_cache[t]) for t in contents]
         normalized_graph_triples = map(self.normalize_graph_triples, graphs)
         self.triples.extend(itertools.chain.from_iterable(normalized_graph_triples))
 
-    async def add_missing_contents_to_cache(self, contents: Iterable[str]) -> None:
-        missing_from_cache = itertools.filterfalse(self.is_in_cache, contents)
-        tasks = [self.add_to_cache_async(t) for t in missing_from_cache]
-        await asyncio.gather(*tasks)
-
-    async def add_to_cache_async(self, text: str) -> None:
-        async with self._semaphore:
-            entity_graph = await self.index_creator.afrom_text(text)
-            self.llm_cache[text] = entity_graph
-
     def add_content(self, content: str) -> None:
-        if self.is_in_cache(content):
+        if self.is_in_llm_cache(content):
             graph = cast(NetworkxEntityGraph, self.llm_cache[content])
         else:
             self.llm_cache[content] = graph = self.index_creator.from_text(content)
         self.triples.extend(self.normalize_graph_triples(graph))
 
-    def is_in_cache(self, text: str) -> bool:
-        hit = text in self.llm_cache
-        if hit:
-            logger.debug("cache <green>hit</green> for content: {}", text[:18])
-        else:
-            logger.debug("cache <red>miss</red> for content: {}", text[:18])
-        return hit
+    ## Updating LLM cache
+    async def update_llm_cache_async(self, contents: Iterable[str]) -> None:
+        missing_from_cache = itertools.filterfalse(self.is_in_llm_cache, contents)
+        tasks = [self.add_to_item_cache_async(t) for t in missing_from_cache]
+        await asyncio.gather(*tasks)
 
+    async def add_to_item_cache_async(self, text: str) -> None:
+        async with self._llm_semaphore:
+            try:
+                entity_graph = await self.index_creator.afrom_text(text)
+            except InvalidRequestError as e:  # TODO pretty hacky
+                logger.exception(e)
+                entity_graph = await self.index_creator.afrom_text(text[:12000])
+
+            self.llm_cache[text] = entity_graph
+
+    ## Normalizing triples
     def normalize_graph_triples(self, graph: NetworkxEntityGraph) -> Iterator[KGTriple]:
         return itertools.starmap(self._normalize_triple, graph.get_triples())
 
-    def _normalize_triple(self, subject: str, predicate: str, object_: str) -> KGTriple:
+    def _normalize_triple(self, subject: str, object_: str, predicate: str) -> KGTriple:
         s = self.vectorstore.similarity_search_with_relevance_scores(subject, k=1)
         o = self.vectorstore.similarity_search_with_relevance_scores(object_, k=1)
         if len(s) and s[0][1] > self.match_threshold:
@@ -148,3 +160,36 @@ class LLMGraphBuilder(GraphBuilder):
 
     def search(self, q: str):
         return self.vectorstore.similarity_search(q)
+
+    def is_in_llm_cache(self, text: str) -> bool:
+        hit = text in self.llm_cache
+        if hit:
+            logger.debug("cache <green>hit</green> for content: {}", text[:18])
+        else:
+            logger.debug("cache <red>miss</red> for content: {}", text[:18])
+        return hit
+
+
+def get_chroma_vectorstore(embedder: embeddings_base.Embeddings) -> Chroma:
+    if isinstance(embedder, openai_embeddings.OpenAIEmbeddings):
+        name = embedder.model
+    else:
+        name = embedder.__class__.__name__
+        logger.warning("Unknown llm type: {}", name)
+    return Chroma(
+        embedding_function=embedder,
+        persist_directory=CHROMA_PERSISTENT_DISK_DIR % name,
+    )
+
+
+def get_cache_triples_cache(
+    llm: llm_base.BaseLLM,
+) -> diskcache.Cache:
+    if isinstance(llm, openai.OpenAIChat):
+        name = llm.model_name
+    elif isinstance(llm, huggingface_text_gen_inference.HuggingFaceTextGenInference):
+        name = "huggingface_TGI_server"
+    else:
+        name = llm.__class__.__name__
+        logger.warning("Unknown llm type: {}", name)
+    return diskcache.Cache(TRIPLES_CACHE_PATH % name)

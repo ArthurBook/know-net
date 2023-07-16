@@ -11,4 +11,4 @@ if __name__ == "__main__":
 
     print(builder.graph)
     print(builder.triples)
-    print(builder.search("hypoxaemia"))
+    print(builder.vectorstore.similarity_search_with_relevance_scores("elon musk"))
