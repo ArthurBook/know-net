@@ -1,68 +1,30 @@
+"""
+Adapted: https://github.com/hwchase17/langchain/blob/master/langchain/chains/graph_qa/base.py
+to query vectors
+"""
+
 from __future__ import annotations
-
+from typing import Any, Dict, List, Optional, NamedTuple
+import networkx as nx
 import itertools
-from typing import Any, Dict, List, NamedTuple, Optional
-
 import loguru
+from langchain.chains import GraphQAChain
 from langchain.callbacks.manager import CallbackManagerForChainRun
-from langchain.chains.base import Chain
-from langchain.chains.graph_qa.prompts import ENTITY_EXTRACTION_PROMPT, GRAPH_QA_PROMPT
-from langchain.chains.llm import LLMChain
 from langchain.graphs.networkx_graph import get_entities
-from langchain.schema import BasePromptTemplate
-from langchain.schema.language_model import BaseLanguageModel
-from pydantic import Field
-from typing_extensions import Self
-
+from know_net.graph_building import LLMGraphBuilder
 from know_net import graph_building
-from know_net.graph_building import Entity, LLMGraphBuilder
+from know_net.graph_building import Entity
 
 logger = loguru.logger
 
 
-class VecGraphQAChain(Chain):
+class EntityKnowledge(NamedTuple):
+    triplet_string: str
+    references: List[str]
+
+
+class VecGraphQAChain(GraphQAChain):
     """Chain for question-answering against a graph."""
-
-    graph: LLMGraphBuilder = Field(exclude=True)
-    entity_extraction_chain: LLMChain
-    qa_chain: LLMChain
-    input_key: str = "query"  #: :meta private:
-    output_key: str = "result"  #: :meta private:
-
-    @property
-    def input_keys(self) -> List[str]:
-        """Return the input keys.
-
-        :meta private:
-        """
-        return [self.input_key]
-
-    @property
-    def output_keys(self) -> List[str]:
-        """Return the output keys.
-
-        :meta private:
-        """
-        _output_keys = [self.output_key]
-        return _output_keys
-
-    @classmethod
-    def from_llm(
-        cls,
-        llm: BaseLanguageModel,
-        qa_prompt: BasePromptTemplate = GRAPH_QA_PROMPT,
-        entity_prompt: BasePromptTemplate = ENTITY_EXTRACTION_PROMPT,
-        **kwargs: Any,
-    ) -> Self:
-        """Initialize from LLM."""
-        qa_chain = LLMChain(llm=llm, prompt=qa_prompt)
-        entity_chain = LLMChain(llm=llm, prompt=entity_prompt)
-
-        return cls(
-            qa_chain=qa_chain,
-            entity_extraction_chain=entity_chain,
-            **kwargs,
-        )
 
     def _call(
         self,
@@ -80,7 +42,7 @@ class VecGraphQAChain(Chain):
             entity_string, color="green", end="\n", verbose=self.verbose
         )
         entities = get_entities(entity_string)
-        print("found entities", entities)
+        logger.info("found entities: {}", entities)
         context = ""
         all_triplets: List[EntityKnowledge] = []
         for entity in entities:
@@ -99,17 +61,12 @@ class VecGraphQAChain(Chain):
         return {self.output_key: result[self.qa_chain.output_key], "references": urls}
 
 
-class EntityKnowledge(NamedTuple):
-    triplet_string: str
-    references: List[str]
-
-
 def get_entity_knowledge(
     graph: LLMGraphBuilder, entity_str: str
 ) -> List[EntityKnowledge]:
     triplets: List[EntityKnowledge] = []
     results = graph.vectorstore.similarity_search_with_relevance_scores(entity_str)
-    for doc, score in results:
+    for doc, _ in results:
         entity = graph.doc_to_entity[doc.page_content]
         logger.info("entity:{}", entity)
         trip_str = str(get_entity_triples(graph.graph, entity))
@@ -120,18 +77,13 @@ def get_entity_knowledge(
     return triplets
 
 
-import networkx as nx
-
-
 def get_entity_triples(graph: nx.Graph, entity: Entity, depth: int = 1) -> List[str]:
     """Get information about an entity."""
-    import networkx as nx
 
-    # TODO: Have more information-specific retrieval methods
     if not graph.has_node(entity):
         return []
 
-    results = []
+    results: List[str] = []
     for src, sink in nx.dfs_edges(graph, entity, depth_limit=depth):
         relation = graph[src][sink]["label"]
         results.append(f"({src.name}, {relation}, {sink.name})")

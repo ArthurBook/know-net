@@ -14,15 +14,6 @@ prompt = PromptTemplate(
     template=_PROMPT,
 )
 
-# llm = HuggingFaceTextGenInference(
-#             inference_server_url="http://100.79.46.78:8081",
-#             verbose=True,
-#             max_new_tokens=512,
-#             top_k=10,
-#             top_p=0.95,
-#             typical_p=0.95,
-#             temperature=0.01,
-#         )
 llm = ChatOpenAI(temperature=0, model="gpt-4")
 chain = LLMChain(llm=llm, prompt=prompt)
 res = chain.predict(topic="the latest technology news and innovation")

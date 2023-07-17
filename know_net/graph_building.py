@@ -71,16 +71,12 @@ class LLMGraphBuilder(GraphBuilder):
         match_treshold: Optional[float] = None,
     ) -> None:
         super().__init__()
-
         self.llm = llm or DEFAULT_LLM
         self.embeddings = embedding_model or DEFAULT_EMBEDDER
         self.match_threshold = match_treshold or DEFAULT_MATCH_THRESHOLD
-
         self.index_creator = GraphIndexCreator(llm=self.llm)
-
         self.vectorstore = get_faiss_vectorstore(self.embeddings)
         self.llm_cache = get_cache_triples_cache(self.llm)
-
         self.doc_to_entity: Dict[str, Entity] = {}
         self.triples: List[KGTriple] = []
 
