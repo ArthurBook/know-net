@@ -3,14 +3,12 @@ import itertools
 from typing import Dict, Iterable, Iterator, List, NamedTuple, Optional, cast
 
 import diskcache
-from langchain import FAISS
 import networkx as nx
+from langchain import FAISS
 from langchain.docstore.document import Document
 from langchain.embeddings import base as embeddings_base
-from langchain.embeddings import (
-    openai as openai_embeddings,
-    huggingface as huggingface_embeddings,
-)
+from langchain.embeddings import huggingface as huggingface_embeddings
+from langchain.embeddings import openai as openai_embeddings
 from langchain.graphs.networkx_graph import NetworkxEntityGraph
 from langchain.indexes import GraphIndexCreator
 from langchain.llms import base as llm_base
@@ -19,8 +17,8 @@ from langchain.vectorstores import Chroma
 from loguru import logger
 from openai import InvalidRequestError
 from pydantic import BaseModel
-from know_net import base
 
+from know_net import base
 from know_net.base import GraphBuilder
 
 logger = logger.opt(ansi=True)
@@ -31,8 +29,8 @@ DEFAULT_MATCH_THRESHOLD = 0.95
 TRIPLES_CACHE_PATH = ".triples_cache/%s"
 CHROMA_PERSISTENT_DISK_DIR = ".chroma_cache/%s"
 
-DEFAULT_LLM = openai.OpenAIChat()  # type: ignore
-DEFAULT_EMBEDDER = huggingface_embeddings.HuggingFaceEmbeddings()  # type: ignore
+DEFAULT_LLM = openai.OpenAIChat(model_name="gpt-4")  # type: ignore
+DEFAULT_EMBEDDER = huggingface_embeddings.HuggingFaceEmbeddings(model_name="distilbert-base-uncased")  # type: ignore
 
 SOURCE_ATTR = "sources"
 
@@ -87,7 +85,7 @@ class LLMGraphBuilder(GraphBuilder):
         asyncio.run(self.update_llm_cache_async(c.text for c in contents))
         graphs = [
             ContentGraph(
-                url=c.url,
+                url=c.source,
                 graph=cast(NetworkxEntityGraph, self.llm_cache[c.text]),
             )
             for c in contents
@@ -99,7 +97,7 @@ class LLMGraphBuilder(GraphBuilder):
         if self.is_in_llm_cache(content.text):
             content_graph = cast(ContentGraph, self.llm_cache[content])
         else:
-            url = content.url
+            url = content.source
             graph = self.index_creator.from_text(content.text)
             self.llm_cache[content] = content_graph = ContentGraph(url=url, graph=graph)
         self.triples.extend(self.normalize_graph_triples(content_graph))

@@ -14,9 +14,9 @@ class ContentParser(abc.ABC):
         ...
 
 
-class YahooFinanceParser(ContentParser):
+class ParagraphParser(ContentParser):
     def parse(self, html: str) -> str:
         soup = bs4.BeautifulSoup(html, "html.parser")
         paragraphs = soup.find_all("p")
-        article_content = "\n".join([p.get_text() for p in paragraphs])
+        article_content = "\n".join(p.get_text() for p in paragraphs)
         return article_content

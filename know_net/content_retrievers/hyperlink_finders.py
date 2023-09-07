@@ -33,7 +33,7 @@ class HyperLinkFinder(abc.ABC):
 
 class SimpleHeuristicFilter(HyperLinkFinder):
     """
-    TODO write `intelligent` class that uses a language model to filter out
+    TODO write intelligent class that uses a language model to filter out
     """
 
     def __init__(

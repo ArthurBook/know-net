@@ -167,3 +167,4 @@ cython_debug/
 .chroma_cache
 .pickled_builders
 .DS_Store
+.knownet_cache/*
