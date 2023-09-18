@@ -14,8 +14,12 @@ from typing import (
 )
 
 import diskcache
+import loguru
+
 
 T = TypeVar("T", covariant=True)
+
+logger = loguru.logger
 
 
 def iterate_through(generator: AsyncGenerator[T, None]) -> List[T]:
@@ -44,22 +48,25 @@ CACHE_DIR = ".knownet_cache/"
 class WithDiskCache(abc.ABC):
     _cache: Optional[diskcache.Cache] = None
 
-    def from_cache(self, key: Any) -> Optional[object]:
-        return self.cache.get(key)
+    @property
+    @abc.abstractmethod
+    def cache_name(self) -> str:
+        ...
+
+    def from_cache(self, key: Any) -> object:
+        return self.cache[key]
 
     def set_in_cache(self, key: Any, value: object) -> None:
         self.cache.set(key, value)
 
     def is_in_cache(self, key: Any) -> bool:
-        return key in self.cache
+        hit = key in self.cache
+        if hit:
+            logger.debug("Cache hit for: {}", key)
+        return hit
 
     def clear_cache(self) -> None:
         self.cache.clear()
-
-    @property
-    @abc.abstractmethod
-    def cache_name(self) -> str:
-        ...
 
     @property
     def cache(self) -> diskcache.Cache:

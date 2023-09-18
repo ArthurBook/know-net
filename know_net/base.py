@@ -1,8 +1,18 @@
 import abc
+import asyncio
 from collections import UserString
-from typing import Annotated, AsyncGenerator, Generator, Iterable, Iterator, NamedTuple
+from typing import (
+    Annotated,
+    AsyncGenerator,
+    Generator,
+    Iterable,
+    Iterator,
+    List,
+    NamedTuple,
+)
 
 import networkx as nx
+import numpy as np
 
 from know_net import mixins
 
@@ -62,6 +72,26 @@ class AsynchronousTripletExtractor(TripletExtractor, abc.ABC):
     def extract_triplets_async(
         self, content: Content
     ) -> AsyncGenerator[KGTriple, None]:
+        ...
+
+
+###
+# Embedder
+###
+
+
+class Embedder:
+    @abc.abstractmethod
+    def embed(self, strings: str) -> np.ndarray:
+        ...
+
+
+class AsyncEmbedder(Embedder):
+    def embed(self, strings: str) -> np.ndarray:
+        return asyncio.run(self.embed_async(strings))
+
+    @abc.abstractmethod
+    async def embed_async(self, strings: str) -> np.ndarray:
         ...
 
 

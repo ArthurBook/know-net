@@ -7,7 +7,7 @@ Tesla CEO and part-time Twitter nuisance Elon Musk showed the world the Cybertru
 """
 
 if __name__ == "__main__":
-    from know_net.triplet_extraction import generative_triplet_finder
+    from know_net.triplet_extraction import langchain_graphindexcreator
 
     from langchain.chat_models import openai
     from langchain.indexes import graph
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     llm = openai.ChatOpenAI(model="gpt-4")  # type: ignore
     model = graph.GraphIndexCreator(llm=llm)
 
-    extractor = generative_triplet_finder.LangChainGraphIndexCreator(model)
+    extractor = langchain_graphindexcreator.LangChainGraphIndexCreator(model)
 
     triplets = extractor.extract_triplets(base.Content(text, base.Source("test")))
     for triplet in triplets:

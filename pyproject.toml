@@ -9,7 +9,7 @@ packages = [{include = "know_net"}]
 [tool.poetry.dependencies]
 python = ">=3.8.1,<3.9.7 || >3.9.7,<4.0"
 networkx = "^3.1"
-langchain = "^0.0.234"
+langchain = "^0.0.292"
 beautifulsoup4 = "^4.12.2"
 openai = "^0.27.8"
 faiss-cpu = "^1.7.4"

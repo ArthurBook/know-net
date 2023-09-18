@@ -27,4 +27,4 @@ if __name__ == "__main__":
     test_url = "https://news.yahoo.com/"
 
     scraper = news_site_crawler.NewsCrawler(test_url)
-    crawl(scraper)
+    crawl_asynchronously(scraper)
